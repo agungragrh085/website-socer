@@ -2,183 +2,215 @@
 <html lang="id">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tournament Manager - Futsal/Voli</title>
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Elite Tournament Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     
     <style>
-      body { font-family: "Plus Jakarta Sans", sans-serif; background-color: #f8fafc; }
-      .bracket-line { border-left: 2px solid #cbd5e1; border-top: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; }
-      .trophy-glow { filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.5)); }
+      body { 
+        font-family: "Inter", sans-serif; 
+        background-color: #050505; 
+        background-image: 
+          radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.15) 0%, transparent 60%),
+          radial-gradient(circle at 0% 100%, rgba(20, 20, 20, 1) 0%, transparent 50%),
+          radial-gradient(circle at 100% 100%, rgba(20, 20, 20, 1) 0%, transparent 50%);
+        color: #e2e8f0; overflow-x: hidden; min-height: 100vh;
+      }
+      .font-cinzel { font-family: 'Cinzel', serif; }
+      .text-gold-gradient {
+        background: linear-gradient(to right, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+      }
+      
+      /* Efek Kaca & Emas */
+      .glass-panel {
+        background: rgba(15, 15, 15, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(212, 175, 55, 0.3);
+      }
+      
+      /* Bracket Scroll Area */
+      .bracket-scroll-area {
+        width: 100%; overflow-x: auto; overflow-y: hidden;
+        -webkit-overflow-scrolling: touch; padding: 20px 0;
+      }
+      .bracket-scroll-area::-webkit-scrollbar { height: 6px; }
+      .bracket-scroll-area::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+      .bracket-scroll-area::-webkit-scrollbar-thumb { background: #D4AF37; border-radius: 4px; }
+
+      /* Bagan Container */
+      .bracket-container {
+        display: flex; align-items: center; justify-content: center;
+        gap: 15px; min-width: 1200px; transform-origin: top center;
+        transition: transform 0.3s ease; padding: 0 20px;
+      }
+      .bracket-half { display: flex; gap: 25px; position: relative; }
+      .match-column { display: flex; flex-direction: column; justify-content: space-around; }
+
+      /* Kartu Tim */
+      .team-card {
+        width: 170px; height: 50px; background: rgba(20,20,20,0.8);
+        border: 1px solid rgba(212,175,55,0.4); border-radius: 6px;
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 0 12px; font-size: 13px; font-weight: 600;
+        margin: 4px 0; transition: all 0.2s; position: relative;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      }
+      .team-card:hover { border-color: #FCF6BA; box-shadow: 0 0 15px rgba(212,175,55,0.3); }
+      
+      /* Garis Penghubung */
+      .connector-line { border-color: rgba(212,175,55,0.5); }
+
+      /* Efek Piala */
+      .trophy-glow {
+        position: absolute; width: 250px; height: 250px;
+        background: radial-gradient(circle, rgba(212, 175, 55, 0.25) 0%, transparent 70%);
+        border-radius: 50%; animation: pulseGlow 3s infinite alternate; z-index: -1;
+      }
+      @keyframes pulseGlow {
+        0% { transform: scale(0.8); opacity: 0.5; }
+        100% { transform: scale(1.1); opacity: 1; }
+      }
+      .trophy-image { width: 160px; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.8)); transition: transform 0.3s; }
+      .trophy-image:hover { transform: translateY(-5px) scale(1.05); }
+
+      /* Navigasi Tab */
+      .nav-tab { transition: all 0.3s; border-bottom: 2px solid transparent; }
+      .nav-tab.active { border-bottom: 2px solid #D4AF37; color: #D4AF37; text-shadow: 0 0 10px rgba(212,175,55,0.5); }
+
+      /* Admin Elements */
+      .admin-only { display: none !important; }
+      body.is-admin .admin-only { display: flex !important; }
+      
+      /* Modal */
       .modal { display: none; }
       .modal.active { display: flex; }
+      .modal-content {
+        background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(20px);
+        border: 1px solid rgba(212, 175, 55, 0.4);
+        box-shadow: 0 0 50px rgba(0,0,0,0.9), 0 0 30px rgba(212,175,55,0.1);
+      }
     </style>
   </head>
-  <body class="text-slate-800 min-h-screen flex flex-col">
+  <body class="min-h-screen flex flex-col relative">
 
     <!-- NAVBAR -->
-    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
-      <div class="max-w-6xl mx-auto px-4 h-16 flex justify-between items-center">
-        <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('home')">
-          <div class="bg-emerald-500 p-2 rounded-lg"><i class="fa-solid fa-trophy text-slate-900"></i></div>
+    <nav class="glass-panel border-b border-[#D4AF37]/30 text-white sticky top-0 z-50 w-full">
+      <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('bracket')">
+          <div class="w-10 h-10 rounded-full border border-[#D4AF37] flex items-center justify-center bg-black shadow-[0_0_15px_rgba(212,175,55,0.3)]">
+            <i class="fa-solid fa-trophy text-[#D4AF37] text-lg"></i>
+          </div>
           <div>
-            <span class="font-extrabold text-lg block leading-none">Tournament</span>
-            <span class="text-emerald-400 text-xs font-semibold">Manager</span>
+            <span class="font-cinzel font-black text-lg sm:text-xl tracking-wider text-gold-gradient block leading-none">ELITE MANAGER</span>
+            <span class="text-[10px] text-gray-400 tracking-widest uppercase">Tournament System</span>
           </div>
         </div>
-        <div class="flex items-center gap-4">
-          <button onclick="switchTab('home')" class="text-sm font-semibold hover:text-emerald-400 transition">Home</button>
-          <button onclick="switchTab('history')" class="text-sm font-semibold hover:text-emerald-400 transition">History</button>
+        
+        <div class="flex items-center gap-2 sm:gap-4">
+          <button onclick="switchTab('bracket')" id="tab-bracket" class="nav-tab active text-sm font-semibold text-gray-300 hover:text-[#D4AF37] px-3 py-2">Bagan</button>
+          <button onclick="switchTab('history')" id="tab-history" class="nav-tab text-sm font-semibold text-gray-300 hover:text-[#D4AF37] px-3 py-2">History</button>
           
-          <!-- Indikator Status Admin -->
-          <div id="admin-status" class="hidden items-center gap-2 bg-emerald-500/20 border border-emerald-500/50 px-3 py-1.5 rounded-full text-xs text-emerald-300">
-            <i class="fa-solid fa-lock-open"></i> Admin Mode
-            <button onclick="logoutAdmin()" class="ml-2 text-red-400 hover:text-red-300"><i class="fa-solid fa-xmark"></i></button>
-          </div>
-          <button id="btn-login-admin" onclick="openModal('loginModal')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold px-4 py-2 rounded-lg text-sm transition">
-            <i class="fa-solid fa-key mr-1"></i> Admin Login
+          <button id="btn-login-admin" onclick="openModal('loginModal')" class="border border-[#D4AF37] text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black font-bold px-3 py-1.5 rounded-full text-xs transition-all shadow-[0_0_10px_rgba(212,175,55,0.2)] ml-2">
+            <i class="fa-solid fa-user-shield mr-1"></i> Admin
           </button>
+          
+          <div id="admin-controls" class="hidden items-center gap-2">
+            <button onclick="openModal('newTournamentModal')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-full text-xs transition-all admin-only">
+              <i class="fa-solid fa-plus mr-1"></i> Turnamen
+            </button>
+            <button onclick="logoutAdmin()" class="bg-red-900/80 border border-red-500 hover:bg-red-700 text-white font-bold px-3 py-1.5 rounded-full text-xs transition-all admin-only">
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     </nav>
 
+    <!-- HEADER TURNAMEN -->
+    <header class="text-center pt-8 pb-4 relative z-10">
+      <h1 id="header-title" class="font-cinzel text-3xl sm:text-5xl font-black text-gold-gradient tracking-widest drop-shadow-2xl mb-2">PIALA REKTOR 2024</h1>
+      <p class="text-gray-400 tracking-[0.3em] uppercase text-xs sm:text-sm">Futsal & Voli Championship</p>
+      <div class="w-24 h-1 bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto mt-4"></div>
+    </header>
+
     <!-- MAIN CONTENT -->
-    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-8">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 pb-12 relative z-10">
       
-      <!-- TAB HOME (BRACKET & ONGOING) -->
-      <div id="tab-home">
+      <!-- TAB BAGAN -->
+      <div id="content-bracket">
         
-        <!-- Header Turnamen Aktif -->
-        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-6 sm:p-8 text-white mb-8 relative overflow-hidden shadow-xl">
-          <div class="relative z-10 flex justify-between items-start">
-            <div>
-              <span class="bg-emerald-500 text-slate-900 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block">Turnamen Aktif</span>
-              <h1 class="text-3xl sm:text-4xl font-extrabold mb-2" id="tournament-title">Piala Rektor UNWAHAS 2024</h1>
-              <p class="text-slate-300 text-sm">Futsal / Minisoccer - Sistem Gugur</p>
-            </div>
-            <button onclick="openModal('newTournamentModal')" class="bg-white/10 hover:bg-white/20 border border-white/20 px-4 py-2 rounded-xl text-sm font-semibold backdrop-blur transition hidden" id="btn-new-tournament">
-              <i class="fa-solid fa-plus mr-1"></i> Turnamen Baru
-            </button>
-          </div>
-          <i class="fa-solid fa-futbol absolute -right-8 -bottom-10 text-9xl text-white/5 rotate-12"></i>
-        </div>
-
-        <!-- BRACKET PERTANDINGAN -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-x-auto">
-          <h2 class="text-xl font-bold mb-6 flex items-center gap-2"><i class="fa-solid fa-sitemap text-emerald-600"></i> Bagan Pertandingan</h2>
-          
-          <div class="flex items-center justify-center min-w-[700px] gap-8 py-4">
-            <!-- SEMIFINAL 1 -->
-            <div class="flex flex-col gap-6 w-64">
-              <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Semifinal</div>
-              
-              <!-- Match 1 -->
-              <div class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-sm relative group">
-                <div class="flex justify-between items-center p-3 border-b border-slate-200">
-                  <span class="font-bold text-sm" id="teamA-m1">PMII</span>
-                  <span class="font-extrabold text-lg" id="scoreA-m1">2</span>
-                </div>
-                <div class="flex justify-between items-center p-3">
-                  <span class="font-bold text-sm" id="teamB-m1">HMI</span>
-                  <span class="font-extrabold text-lg" id="scoreB-m1">1</span>
-                </div>
-                <!-- Tombol Edit (Hanya muncul jika Admin) -->
-                <button onclick="openEditMatch('m1')" class="admin-only absolute inset-0 bg-black/50 text-white hidden group-hover:flex items-center justify-center font-bold text-sm backdrop-blur-sm transition">
-                  <i class="fa-solid fa-pen-to-square mr-2"></i> Edit Skor & Formasi
-                </button>
-              </div>
-
-              <!-- Match 2 -->
-              <div class="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden shadow-sm relative group">
-                <div class="flex justify-between items-center p-3 border-b border-slate-200">
-                  <span class="font-bold text-sm" id="teamA-m2">BEM FT</span>
-                  <span class="font-extrabold text-lg" id="scoreA-m2">0</span>
-                </div>
-                <div class="flex justify-between items-center p-3">
-                  <span class="font-bold text-sm" id="teamB-m2">TBD</span>
-                  <span class="font-extrabold text-lg" id="scoreB-m2">0</span>
-                </div>
-                <button onclick="openEditMatch('m2')" class="admin-only absolute inset-0 bg-black/50 text-white hidden group-hover:flex items-center justify-center font-bold text-sm backdrop-blur-sm transition">
-                  <i class="fa-solid fa-pen-to-square mr-2"></i> Edit Skor & Formasi
-                </button>
-              </div>
-            </div>
-
-            <!-- KONEKTOR & PIALA -->
-            <div class="flex flex-col items-center justify-center relative w-32">
-              <div class="absolute left-0 top-[20%] w-full h-[60%] bracket-line rounded-l-xl"></div>
-              <div class="relative z-10 bg-white p-2 rounded-full border-4 border-yellow-400 trophy-glow">
-                <i class="fa-solid fa-trophy text-4xl text-yellow-500"></i>
-              </div>
-              <p class="mt-2 text-xs font-bold text-slate-500 text-center">Final</p>
-            </div>
-
-            <!-- FINAL -->
-            <div class="flex flex-col gap-6 w-64">
-              <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Final</div>
-              
-              <!-- Match Final -->
-              <div class="bg-amber-50 border border-amber-200 rounded-xl overflow-hidden shadow-md relative group">
-                <div class="flex justify-between items-center p-3 border-b border-amber-200">
-                  <span class="font-bold text-sm text-amber-900" id="teamA-final">PMII</span>
-                  <span class="font-extrabold text-lg text-amber-900" id="scoreA-final">-</span>
-                </div>
-                <div class="flex justify-between items-center p-3">
-                  <span class="font-bold text-sm text-amber-900" id="teamB-final">TBD</span>
-                  <span class="font-extrabold text-lg text-amber-900" id="scoreB-final">-</span>
-                </div>
-                <button onclick="openEditMatch('final')" class="admin-only absolute inset-0 bg-black/50 text-white hidden group-hover:flex items-center justify-center font-bold text-sm backdrop-blur-sm transition">
-                  <i class="fa-solid fa-pen-to-square mr-2"></i> Edit Skor & Formasi
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- INFO PERTANDINGAN BERLANGSUNG (Jika ada) -->
-        <div class="mt-8 bg-emerald-50 border border-emerald-200 rounded-2xl p-6 hidden" id="ongoing-match-info">
-          <div class="flex items-center gap-3 mb-2">
+        <!-- Banner Pertandingan Berlangsung (Live) -->
+        <div id="live-banner" class="hidden glass-panel border-red-500/50 rounded-xl p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
             <span class="relative flex h-3 w-3">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
             </span>
-            <h3 class="font-bold text-emerald-900">Pertandingan Sedang Berlangsung!</h3>
+            <div>
+              <h3 class="text-red-400 font-bold text-sm uppercase tracking-wider">Sedang Berlangsung</h3>
+              <p id="live-match-text" class="text-white font-bold text-lg">PMII vs HMI</p>
+            </div>
           </div>
-          <p class="text-sm text-emerald-700">Segera saksikan pertandingan seru antara <strong>PMII vs HMI</strong> di lapangan utama.</p>
+          <button onclick="switchTab('bracket')" class="text-xs bg-red-500/20 text-red-300 border border-red-500/50 px-4 py-2 rounded-lg hover:bg-red-500 hover:text-white transition">Lihat Bagan</button>
         </div>
 
+        <!-- Area Bagan -->
+        <div class="bracket-scroll-area" id="bracketWrapper">
+          <div class="bracket-container" id="mainBracket">
+            
+            <!-- BAGIAN KIRI -->
+            <div class="bracket-half" id="left-bracket">
+              <!-- Diisi via JS -->
+            </div>
+
+            <!-- TENGAH (PIALA & FINAL) -->
+            <div class="flex flex-col items-center justify-center relative px-6 z-20">
+              <div class="absolute left-0 w-full h-0.5 bg-[#D4AF37]/30 top-[40%] -z-10"></div>
+              
+              <div class="relative group cursor-pointer mb-6" onclick="openModal('trophyModal')">
+                <div class="trophy-glow"></div>
+                <img id="main-trophy" src="https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg" alt="Trophy" class="trophy-image object-contain">
+                <div class="admin-only absolute inset-0 bg-black/60 items-center justify-center rounded-full text-[#D4AF37] font-bold backdrop-blur-sm border-2 border-[#D4AF37] transition-all">
+                  <i class="fa-solid fa-camera text-2xl"></i>
+                </div>
+              </div>
+              
+              <!-- Kartu Final -->
+              <div class="w-64 relative group z-20" id="final-match-card">
+                <!-- Diisi via JS -->
+              </div>
+            </div>
+
+            <!-- BAGIAN KANAN -->
+            <div class="bracket-half" id="right-bracket">
+              <!-- Diisi via JS -->
+            </div>
+
+          </div>
+        </div>
+
+        <div class="text-center text-[10px] text-[#D4AF37]/70 mt-4 sm:hidden tracking-widest uppercase">
+          <i class="fa-solid fa-arrows-left-right mr-1"></i> Geser bagan
+        </div>
       </div>
 
       <!-- TAB HISTORY -->
-      <div id="tab-history" class="hidden">
-        <h2 class="text-2xl font-extrabold mb-6">Riwayat Pertandingan</h2>
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <table class="w-full text-left">
-            <thead class="bg-slate-100 text-slate-600 text-sm">
+      <div id="content-history" class="hidden">
+        <div class="glass-panel rounded-2xl overflow-hidden">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-black/60 text-[#D4AF37] text-xs uppercase tracking-wider">
               <tr>
-                <th class="p-4 font-bold">Tanggal</th>
-                <th class="p-4 font-bold">Babak</th>
-                <th class="p-4 font-bold">Tim A</th>
-                <th class="p-4 font-bold text-center">Skor</th>
-                <th class="p-4 font-bold">Tim B</th>
-                <th class="p-4 font-bold">Status</th>
+                <th class="p-4 border-b border-[#333]">Tanggal</th>
+                <th class="p-4 border-b border-[#333]">Babak</th>
+                <th class="p-4 border-b border-[#333] text-center">Skor</th>
+                <th class="p-4 border-b border-[#333]">Formasi / Pemain</th>
               </tr>
             </thead>
-            <tbody id="history-table-body">
-              <!-- Data dummy history -->
-              <tr class="border-b border-slate-100 hover:bg-slate-50">
-                <td class="p-4 text-sm">20 Nov 2024</td>
-                <td class="p-4 text-sm font-semibold">Penyisihan</td>
-                <td class="p-4 font-bold">BEM FT</td>
-                <td class="p-4 text-center font-extrabold bg-slate-50">3 - 2</td>
-                <td class="p-4 font-bold">UKM Voli</td>
-                <td class="p-4"><span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded">Selesai</span></td>
-              </tr>
+            <tbody id="history-table-body" class="text-sm divide-y divide-[#222]">
+              <!-- Diisi via JS -->
             </tbody>
           </table>
         </div>
@@ -187,237 +219,405 @@
     </main>
 
     <!-- FOOTER -->
-    <footer class="bg-slate-900 text-slate-400 py-6 text-center text-sm mt-auto">
-      <p>&copy; 2024 Tournament Manager. All rights reserved.</p>
+    <footer class="glass-panel border-t border-[#D4AF37]/20 py-4 text-center text-xs text-gray-500 mt-auto">
+      &copy; 2024 Elite Tournament Manager. All Rights Reserved.
     </footer>
 
     <!-- ==================== MODALS ==================== -->
 
-    <!-- MODAL LOGIN ADMIN -->
-    <div id="loginModal" class="modal fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] items-center justify-center p-4">
-      <div class="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl relative">
-        <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-xl"></i></button>
+    <!-- LOGIN ADMIN -->
+    <div id="loginModal" class="modal fixed inset-0 bg-black/90 backdrop-blur-md z-[100] items-center justify-center p-4">
+      <div class="modal-content rounded-2xl w-full max-w-sm p-6 relative">
+        <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-gray-400 hover:text-[#D4AF37]"><i class="fa-solid fa-xmark text-xl"></i></button>
         <div class="text-center mb-6">
-          <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
-            <i class="fa-solid fa-user-shield text-2xl text-slate-700"></i>
+          <div class="w-16 h-16 mx-auto rounded-full border border-[#D4AF37] flex items-center justify-center mb-3 bg-black shadow-[0_0_20px_rgba(212,175,55,0.2)]">
+            <i class="fa-solid fa-key text-2xl text-[#D4AF37]"></i>
           </div>
-          <h3 class="text-xl font-bold">Admin Login</h3>
-          <p class="text-sm text-slate-500">Masukkan kunci pembuat acara</p>
+          <h3 class="text-xl font-cinzel font-bold text-gold-gradient">Admin Access</h3>
+          <p class="text-xs text-gray-400 mt-1">Masukkan kunci otorisasi turnamen</p>
         </div>
         <form onsubmit="handleLogin(event)">
-          <input type="password" id="adminKey" placeholder="Kunci Rahasia (Cth: 12345)" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
-          <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition">Buka Akses</button>
+          <input type="password" id="adminKey" placeholder="Kunci Rahasia" class="w-full px-4 py-3 bg-black/50 border border-[#444] rounded-xl mb-4 text-white text-center tracking-widest focus:outline-none focus:border-[#D4AF37] transition-colors" required>
+          <button type="submit" class="w-full bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-black font-bold py-3 rounded-xl transition hover:opacity-90 shadow-lg">BUKA AKSES</button>
         </form>
       </div>
     </div>
 
-    <!-- MODAL EDIT MATCH -->
-    <div id="editMatchModal" class="modal fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] items-center justify-center p-4">
-      <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-        <button onclick="closeModal('editMatchModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-xl"></i></button>
-        <h3 class="text-xl font-bold mb-4">Edit Pertandingan</h3>
+    <!-- EDIT MATCH -->
+    <div id="editMatchModal" class="modal fixed inset-0 bg-black/90 backdrop-blur-md z-[100] items-center justify-center p-4">
+      <div class="modal-content rounded-2xl w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
+        <button onclick="closeModal('editMatchModal')" class="absolute top-4 right-4 text-gray-400 hover:text-[#D4AF37]"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <h3 class="text-lg font-cinzel font-bold text-gold-gradient mb-4 border-b border-[#333] pb-2">Update Match Details</h3>
         
         <form onsubmit="saveMatch(event)">
           <input type="hidden" id="editMatchId">
           
           <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Nama Tim A</label>
-              <input type="text" id="editTeamA" class="w-full px-3 py-2 border rounded-lg focus:ring-emerald-500 focus:outline-none" required>
+              <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Tim A</label>
+              <input type="text" id="editTeamA" class="w-full px-3 py-2 bg-black/50 border border-[#444] rounded-lg text-white text-sm focus:border-[#D4AF37] focus:outline-none" required>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Skor Tim A</label>
-              <input type="number" id="editScoreA" class="w-full px-3 py-2 border rounded-lg focus:ring-emerald-500 focus:outline-none" required>
+              <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Skor A</label>
+              <input type="number" id="editScoreA" class="w-full px-3 py-2 bg-black/50 border border-[#444] rounded-lg text-white text-sm focus:border-[#D4AF37] focus:outline-none text-center font-bold" required>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-4 mb-6">
+          <div class="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Nama Tim B</label>
-              <input type="text" id="editTeamB" class="w-full px-3 py-2 border rounded-lg focus:ring-emerald-500 focus:outline-none" required>
+              <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Tim B</label>
+              <input type="text" id="editTeamB" class="w-full px-3 py-2 bg-black/50 border border-[#444] rounded-lg text-white text-sm focus:border-[#D4AF37] focus:outline-none" required>
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Skor Tim B</label>
-              <input type="number" id="editScoreB" class="w-full px-3 py-2 border rounded-lg focus:ring-emerald-500 focus:outline-none" required>
+              <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Skor B</label>
+              <input type="number" id="editScoreB" class="w-full px-3 py-2 bg-black/50 border border-[#444] rounded-lg text-white text-sm focus:border-[#D4AF37] focus:outline-none text-center font-bold" required>
             </div>
+          </div>
+
+          <div class="mb-4">
+             <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Status Pertandingan</label>
+             <select id="editStatus" class="w-full px-3 py-2 bg-black/50 border border-[#444] rounded-lg text-white text-sm focus:border-[#D4AF37] focus:outline-none">
+               <option value="upcoming">Akan Datang (Belum Mulai)</option>
+               <option value="live">Sedang Berlangsung (LIVE)</option>
+               <option value="finished">Selesai (History)</option>
+             </select>
           </div>
 
           <div class="mb-6">
-            <label class="block text-xs font-bold text-slate-600 mb-2">Formasi / Anggota Tim (Pisahkan dengan koma)</label>
-            <textarea id="editFormation" rows="3" class="w-full px-3 py-2 border rounded-lg focus:ring-emerald-500 focus:outline-none" placeholder="Cth: Budi (Kiper), Andi, Rian, Dodi, Eko"></textarea>
+            <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Formasi / Anggota (Pisahkan dengan koma)</label>
+            <textarea id="editFormation" rows="3" class="w-full px-3 py-2 bg-black/50 border border-[#444] rounded-lg text-white text-sm focus:border-[#D4AF37] focus:outline-none" placeholder="Cth: Budi (Kiper), Andi, Rian, Dodi..."></textarea>
           </div>
 
-          <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition">Simpan Perubahan</button>
+          <button type="submit" class="w-full bg-gradient-to-r from-emerald-600 to-emerald-800 text-white font-bold py-3 rounded-xl transition hover:opacity-90 shadow-lg">SIMPAN PERUBAHAN</button>
         </form>
       </div>
     </div>
 
-    <!-- MODAL TURNAMEN BARU -->
-    <div id="newTournamentModal" class="modal fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] items-center justify-center p-4">
-      <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
-        <button onclick="closeModal('newTournamentModal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-xl"></i></button>
-        <h3 class="text-xl font-bold mb-4">Buat Turnamen Baru</h3>
-        
+    <!-- TURNAMEN BARU -->
+    <div id="newTournamentModal" class="modal fixed inset-0 bg-black/90 backdrop-blur-md z-[100] items-center justify-center p-4">
+      <div class="modal-content rounded-2xl w-full max-w-sm p-6 relative">
+        <button onclick="closeModal('newTournamentModal')" class="absolute top-4 right-4 text-gray-400 hover:text-[#D4AF37]"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <h3 class="text-xl font-cinzel font-bold text-gold-gradient mb-4 text-center">Buat Turnamen Baru</h3>
         <form onsubmit="createNewTournament(event)">
           <div class="mb-4">
-            <label class="block text-xs font-bold text-slate-600 mb-1">Nama Turnamen</label>
-            <input type="text" id="newTournamentName" class="w-full px-3 py-2 border rounded-lg focus:ring-emerald-500 focus:outline-none" placeholder="Cth: Piala Gubernur 2024" required>
+            <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Nama Turnamen</label>
+            <input type="text" id="newTournamentName" class="w-full px-3 py-2 bg-black/50 border border-[#444] rounded-lg text-white text-sm focus:border-[#D4AF37] focus:outline-none" placeholder="Cth: Piala Gubernur 2024" required>
           </div>
           <div class="mb-6">
-            <label class="block text-xs font-bold text-slate-600 mb-1">Kunci Admin Baru</label>
-            <input type="password" id="newTournamentKey" class="w-full px-3 py-2 border rounded-lg focus:ring-emerald-500 focus:outline-none" placeholder="Buat kunci rahasia" required>
+            <label class="block text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Kunci Admin Baru</label>
+            <input type="password" id="newTournamentKey" class="w-full px-3 py-2 bg-black/50 border border-[#444] rounded-lg text-white text-sm focus:border-[#D4AF37] focus:outline-none" placeholder="Buat kunci rahasia" required>
           </div>
-          <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl transition">Buat Turnamen</button>
+          <button type="submit" class="w-full bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-black font-bold py-3 rounded-xl transition hover:opacity-90 shadow-lg">BUAT TURNAMEN</button>
         </form>
+      </div>
+    </div>
+
+    <!-- GANTI PIALA -->
+    <div id="trophyModal" class="modal fixed inset-0 bg-black/90 backdrop-blur-md z-[100] items-center justify-center p-4">
+      <div class="modal-content rounded-2xl w-full max-w-sm p-6 relative text-center">
+        <button onclick="closeModal('trophyModal')" class="absolute top-4 right-4 text-gray-400 hover:text-[#D4AF37]"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <h3 class="text-xl font-cinzel font-bold text-gold-gradient mb-2">Ganti Gambar Piala</h3>
+        <input type="file" id="trophyUpload" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#D4AF37] file:text-black mb-4 cursor-pointer border border-[#444] rounded-lg p-1"/>
+        <button onclick="changeTrophy()" class="w-full bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-black font-bold py-3 rounded-xl transition hover:opacity-90 shadow-lg">TERAPKAN</button>
       </div>
     </div>
 
     <!-- ==================== JAVASCRIPT LOGIC ==================== -->
     <script>
-      // State Global (Simulasi Database)
+      // === STATE GLOBAL ===
       let isAdmin = false;
-      let currentTournamentKey = "12345"; // Kunci default untuk demo
+      let adminKey = "12345";
+      let matches = [
+        { id: 'L1', stage: 'left', round: 1, teamA: 'PMII', scoreA: 2, teamB: 'HMI', scoreB: 1, status: 'finished', formation: 'Budi, Andi, Rian, Dodi, Eko' },
+        { id: 'L2', stage: 'left', round: 1, teamA: 'BEM FT', scoreA: 0, teamB: 'TBD', scoreB: 0, status: 'upcoming', formation: '' },
+        { id: 'Q1', stage: 'left', round: 2, teamA: 'PMII', scoreA: 0, teamB: 'TBD', scoreB: 0, status: 'upcoming', formation: '' },
+        { id: 'S1', stage: 'left', round: 3, teamA: 'TBD', scoreA: 0, teamB: 'TBD', scoreB: 0, status: 'upcoming', formation: '' },
+        { id: 'R1', stage: 'right', round: 1, teamA: 'BEM FEB', scoreA: 3, teamB: 'UKM Basket', scoreB: 0, status: 'finished', formation: 'Joko, Anto, Rudi' },
+        { id: 'R2', stage: 'right', round: 1, teamA: 'TBD', scoreA: 0, teamB: 'TBD', scoreB: 0, status: 'upcoming', formation: '' },
+        { id: 'Q2', stage: 'right', round: 2, teamA: 'TBD', scoreA: 0, teamB: 'TBD', scoreB: 0, status: 'upcoming', formation: '' },
+        { id: 'S2', stage: 'right', round: 3, teamA: 'TBD', scoreA: 0, teamB: 'TBD', scoreB: 0, status: 'upcoming', formation: '' },
+        { id: 'F', stage: 'center', round: 4, teamA: 'TBD', scoreA: 0, teamB: 'TBD', scoreB: 0, status: 'upcoming', formation: '' }
+      ];
 
-      // Fungsi Navigasi Tab
+      // === FUNGSI NAVIGASI ===
       function switchTab(tab) {
-        document.getElementById('tab-home').classList.add('hidden');
-        document.getElementById('tab-history').classList.add('hidden');
+        document.getElementById('content-bracket').classList.add('hidden');
+        document.getElementById('content-history').classList.add('hidden');
+        document.getElementById('tab-bracket').classList.remove('active');
+        document.getElementById('tab-history').classList.remove('active');
+
+        if (tab === 'bracket') {
+          document.getElementById('content-bracket').classList.remove('hidden');
+          document.getElementById('tab-bracket').classList.add('active');
+        } else {
+          document.getElementById('content-history').classList.remove('hidden');
+          document.getElementById('tab-history').classList.add('active');
+          renderHistory();
+        }
+      }
+
+      // === RENDER BAGAN ===
+      function renderBracket() {
+        const leftContainer = document.getElementById('left-bracket');
+        const rightContainer = document.getElementById('right-bracket');
+        const finalContainer = document.getElementById('final-match-card');
         
-        if (tab === 'home') document.getElementById('tab-home').classList.remove('hidden');
-        if (tab === 'history') document.getElementById('tab-history').classList.remove('hidden');
+        leftContainer.innerHTML = '';
+        rightContainer.innerHTML = '';
+
+        // Kelompokkan berdasarkan Round
+        const leftRounds = { 1: [], 2: [], 3: [] };
+        const rightRounds = { 1: [], 2: [], 3: [] };
+        
+        matches.forEach(m => {
+          if (m.stage === 'left') leftRounds[m.round].push(m);
+          if (m.stage === 'right') rightRounds[m.round].push(m);
+        });
+
+        // Helper untuk membuat kartu
+        const createCard = (m, isReverse = false) => {
+          const flexClass = isReverse ? 'flex-row-reverse' : 'flex-row';
+          const statusIcon = m.status === 'live' ? '<span class="absolute -top-2 -right-2 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span></span>' : '';
+          
+          return `
+            <div class="relative group mb-4">
+              ${statusIcon}
+              <div class="team-card ${flexClass}">
+                <span class="flex items-center gap-2"><div class="w-5 h-3.5 bg-gradient-to-br from-gray-600 to-gray-800 border border-gray-500 rounded-sm"></div> ${m.teamA}</span> 
+                <span class="font-black ${m.scoreA > m.scoreB ? 'text-[#D4AF37]' : 'text-gray-500'}">${m.scoreA}</span>
+              </div>
+              <div class="team-card ${flexClass}">
+                <span class="flex items-center gap-2"><div class="w-5 h-3.5 bg-gradient-to-br from-gray-600 to-gray-800 border border-gray-500 rounded-sm"></div> ${m.teamB}</span> 
+                <span class="font-black ${m.scoreB > m.scoreA ? 'text-[#D4AF37]' : 'text-gray-500'}">${m.scoreB}</span>
+              </div>
+              <button class="admin-only absolute inset-0 bg-black/60 items-center justify-center rounded-md border-2 border-[#D4AF37] backdrop-blur-sm text-[10px] font-bold text-[#D4AF37] transition-all" onclick="openEditMatch('${m.id}')">EDIT</button>
+            </div>
+          `;
+        };
+
+        // Render Kiri (16 Besar -> 8 Besar -> Semi)
+        leftContainer.innerHTML = `
+          <div class="flex flex-col justify-around">${leftRounds[1].map(m => createCard(m)).join('')}</div>
+          <div class="flex flex-col justify-center"><div class="h-32 border-r-2 border-t-2 border-b-2 border-[#D4AF37]/30 w-6 rounded-r-xl"></div></div>
+          <div class="flex flex-col justify-around">${leftRounds[2].map(m => createCard(m)).join('')}</div>
+          <div class="flex flex-col justify-center"><div class="h-32 border-r-2 border-t-2 border-b-2 border-[#D4AF37]/30 w-6 rounded-r-xl"></div></div>
+          <div class="flex flex-col justify-around">${leftRounds[3].map(m => createCard(m)).join('')}</div>
+        `;
+
+        // Render Kanan (Semi -> 8 Besar -> 16 Besar)
+        rightContainer.innerHTML = `
+          <div class="flex flex-col justify-around">${rightRounds[3].map(m => createCard(m, true)).join('')}</div>
+          <div class="flex flex-col justify-center"><div class="h-32 border-l-2 border-t-2 border-b-2 border-[#D4AF37]/30 w-6 rounded-l-xl"></div></div>
+          <div class="flex flex-col justify-around">${rightRounds[2].map(m => createCard(m, true)).join('')}</div>
+          <div class="flex flex-col justify-center"><div class="h-32 border-l-2 border-t-2 border-b-2 border-[#D4AF37]/30 w-6 rounded-l-xl"></div></div>
+          <div class="flex flex-col justify-around">${rightRounds[1].map(m => createCard(m, true)).join('')}</div>
+        `;
+
+        // Render Final
+        const finalMatch = matches.find(m => m.stage === 'center');
+        finalContainer.innerHTML = `
+          <div class="text-center text-[10px] font-bold text-[#D4AF37] tracking-[0.2em] mb-2 uppercase">Grand Final</div>
+          <div class="bg-black/80 border-2 border-[#D4AF37] rounded-xl overflow-hidden shadow-[0_0_30px_rgba(212,175,55,0.4)] backdrop-blur-md relative group">
+             <div class="flex justify-between items-center p-3 border-b border-[#333]">
+               <span class="text-sm font-bold text-white">${finalMatch.teamA}</span>
+               <span class="font-black text-xl text-gold-gradient">${finalMatch.scoreA}</span>
+             </div>
+             <div class="flex justify-between items-center p-3">
+               <span class="text-sm font-bold text-white">${finalMatch.teamB}</span>
+               <span class="font-black text-xl text-gold-gradient">${finalMatch.scoreB}</span>
+             </div>
+             <button class="admin-only absolute inset-0 bg-black/60 items-center justify-center border-2 border-[#D4AF37] backdrop-blur-sm text-xs font-bold text-[#D4AF37]" onclick="openEditMatch('F')">EDIT FINAL</button>
+          </div>
+        `;
+
+        checkLiveMatch();
+        adjustBracketScale();
       }
 
-      // Fungsi Modal
-      function openModal(id) {
-        document.getElementById(id).classList.add('active');
-      }
-      function closeModal(id) {
-        document.getElementById(id).classList.remove('active');
+      // === CEK PERTANDINGAN LIVE ===
+      function checkLiveMatch() {
+        const live = matches.find(m => m.status === 'live');
+        const banner = document.getElementById('live-banner');
+        
+        if (live) {
+          banner.classList.remove('hidden');
+          document.getElementById('live-match-text').innerText = `${live.teamA} vs ${live.teamB}`;
+        } else {
+          banner.classList.add('hidden');
+        }
       }
 
-      // Fungsi Login Admin
+      // === RENDER HISTORY ===
+      function renderHistory() {
+        const tbody = document.getElementById('history-table-body');
+        tbody.innerHTML = '';
+        
+        const finishedMatches = matches.filter(m => m.status === 'finished');
+        
+        if (finishedMatches.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-gray-500 italic">Belum ada riwayat pertandingan.</td></tr>`;
+          return;
+        }
+
+        finishedMatches.forEach(m => {
+          const row = `
+            <tr class="hover:bg-white/5 transition">
+              <td class="p-4 text-gray-300">Hari ini</td>
+              <td class="p-4 text-[#D4AF37] font-semibold">Babak ${m.round}</td>
+              <td class="p-4 text-center">
+                <span class="font-bold text-white">${m.teamA}</span>
+                <span class="bg-black border border-[#444] px-3 py-1 rounded mx-2 font-black text-[#D4AF37]">${m.scoreA} - ${m.scoreB}</span>
+                <span class="font-bold text-white">${m.teamB}</span>
+              </td>
+              <td class="p-4 text-xs text-gray-400 max-w-xs truncate" title="${m.formation}">${m.formation || '-'}</td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      }
+
+      // === MODAL & LOGIN ===
+      function openModal(id) { document.getElementById(id).classList.add('active'); }
+      function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
       function handleLogin(e) {
         e.preventDefault();
         const key = document.getElementById('adminKey').value;
-        
-        if (key === currentTournamentKey) {
+        if (key === adminKey) {
           isAdmin = true;
-          // Ubah UI Navbar
+          document.body.classList.add('is-admin');
           document.getElementById('btn-login-admin').classList.add('hidden');
-          document.getElementById('admin-status').classList.remove('hidden');
-          document.getElementById('admin-status').classList.add('flex');
-          document.getElementById('btn-new-tournament').classList.remove('hidden');
-          
-          // Tampilkan tombol edit di semua match
-          document.querySelectorAll('.admin-only').forEach(el => el.classList.remove('hidden'));
-          
+          document.getElementById('admin-controls').classList.remove('hidden');
+          document.getElementById('admin-controls').classList.add('flex');
           closeModal('loginModal');
-          alert("Login Berhasil! Anda sekarang dapat mengedit pertandingan.");
+          renderBracket();
         } else {
-          alert("Kunci Salah! Silakan coba lagi.");
+          alert("Kunci Salah! Akses Ditolak.");
         }
         document.getElementById('adminKey').value = '';
       }
 
-      // Fungsi Logout
       function logoutAdmin() {
         isAdmin = false;
+        document.body.classList.remove('is-admin');
         document.getElementById('btn-login-admin').classList.remove('hidden');
-        document.getElementById('admin-status').classList.add('hidden');
-        document.getElementById('admin-status').classList.remove('flex');
-        document.getElementById('btn-new-tournament').classList.add('hidden');
-        
-        document.querySelectorAll('.admin-only').forEach(el => el.classList.add('hidden'));
-        alert("Anda telah keluar dari mode Admin.");
+        document.getElementById('admin-controls').classList.add('hidden');
+        document.getElementById('admin-controls').classList.remove('flex');
+        renderBracket();
       }
 
-      // Fungsi Membuka Edit Match
-      function openEditMatch(matchId) {
+      // === EDIT MATCH ===
+      function openEditMatch(id) {
         if (!isAdmin) return;
-
-        // Data dummy berdasarkan ID match
-        const matchData = {
-          'm1': { teamA: 'PMII', scoreA: 2, teamB: 'HMI', scoreB: 1, formation: 'Budi, Andi, Rian, Dodi, Eko' },
-          'm2': { teamA: 'BEM FT', scoreA: 0, teamB: 'TBD', scoreB: 0, formation: '-' },
-          'final': { teamA: 'PMII', scoreA: '-', teamB: 'TBD', scoreB: '-', formation: '' }
-        };
-
-        const data = matchData[matchId];
+        const match = matches.find(m => m.id === id);
         
-        document.getElementById('editMatchId').value = matchId;
-        document.getElementById('editTeamA').value = data.teamA;
-        document.getElementById('editScoreA').value = data.scoreA;
-        document.getElementById('editTeamB').value = data.teamB;
-        document.getElementById('editScoreB').value = data.scoreB;
-        document.getElementById('editFormation').value = data.formation;
+        document.getElementById('editMatchId').value = match.id;
+        document.getElementById('editTeamA').value = match.teamA;
+        document.getElementById('editScoreA').value = match.scoreA;
+        document.getElementById('editTeamB').value = match.teamB;
+        document.getElementById('editScoreB').value = match.scoreB;
+        document.getElementById('editStatus').value = match.status;
+        document.getElementById('editFormation').value = match.formation;
 
         openModal('editMatchModal');
       }
 
-      // Fungsi Menyimpan Edit Match
       function saveMatch(e) {
         e.preventDefault();
         const id = document.getElementById('editMatchId').value;
-        const teamA = document.getElementById('editTeamA').value;
-        const scoreA = document.getElementById('editScoreA').value;
-        const teamB = document.getElementById('editTeamB').value;
-        const scoreB = document.getElementById('editScoreB').value;
-
-        // Update DOM Bracket
-        document.getElementById(`teamA-${id}`).innerText = teamA;
-        document.getElementById(`scoreA-${id}`).innerText = scoreA;
-        document.getElementById(`teamB-${id}`).innerText = teamB;
-        document.getElementById(`scoreB-${id}`).innerText = scoreB;
+        const matchIndex = matches.findIndex(m => m.id === id);
+        
+        if (matchIndex !== -1) {
+          matches[matchIndex].teamA = document.getElementById('editTeamA').value;
+          matches[matchIndex].scoreA = parseInt(document.getElementById('editScoreA').value);
+          matches[matchIndex].teamB = document.getElementById('editTeamB').value;
+          matches[matchIndex].scoreB = parseInt(document.getElementById('editScoreB').value);
+          matches[matchIndex].status = document.getElementById('editStatus').value;
+          matches[matchIndex].formation = document.getElementById('editFormation').value;
+        }
 
         closeModal('editMatchModal');
-        alert("Pertandingan berhasil diperbarui!");
+        renderBracket();
         
-        // Logika Otomatis: Jika Semifinal 1 & 2 selesai, update Final
-        if (id === 'm1' || id === 'm2') {
-          checkAndUpdateFinal();
-        }
+        // Auto-progress bagan (Simulasi sederhana)
+        autoProgressBracket();
       }
 
-      // Fungsi Otomatis Masuk ke Final (Simulasi Sederhana)
-      function checkAndUpdateFinal() {
-        const scoreA1 = parseInt(document.getElementById('scoreA-m1').innerText);
-        const scoreB1 = parseInt(document.getElementById('scoreB-m1').innerText);
-        const scoreA2 = parseInt(document.getElementById('scoreA-m2').innerText);
-        const scoreB2 = parseInt(document.getElementById('scoreB-m2').innerText);
-
-        let winner1 = scoreA1 > scoreB1 ? document.getElementById('teamA-m1').innerText : document.getElementById('teamB-m1').innerText;
-        let winner2 = scoreA2 > scoreB2 ? document.getElementById('teamA-m2').innerText : document.getElementById('teamB-m2').innerText;
-
-        // Hanya update jika TBD
-        if (document.getElementById('teamA-final').innerText === 'PMII' || document.getElementById('teamA-final').innerText === 'TBD') {
-             document.getElementById('teamA-final').innerText = winner1;
+      // === LOGIKA OTOMATISASI BAGAN (Sederhana) ===
+      function autoProgressBracket() {
+        // Logika: Jika match L1 selesai, pemenang masuk ke Q1 (Tim A)
+        const l1 = matches.find(m => m.id === 'L1');
+        if (l1.status === 'finished') {
+          const winner = l1.scoreA > l1.scoreB ? l1.teamA : l1.teamB;
+          const q1 = matches.find(m => m.id === 'Q1');
+          if (q1 && q1.teamA === 'TBD') q1.teamA = winner;
         }
-        if (document.getElementById('teamB-final').innerText === 'TBD') {
-             document.getElementById('teamB-final').innerText = winner2;
-        }
+        // ... (Bisa dikembangkan untuk seluruh bagan)
+        renderBracket();
       }
 
-      // Fungsi Buat Turnamen Baru
+      // === TURNAMEN BARU ===
       function createNewTournament(e) {
         e.preventDefault();
         const name = document.getElementById('newTournamentName').value;
-        const key = document.getElementById('newTournamentKey').value;
+        adminKey = document.getElementById('newTournamentKey').value;
 
-        currentTournamentKey = key;
-        document.getElementById('tournament-title').innerText = name;
-
-        // Reset Bracket
-        const matches = ['m1', 'm2', 'final'];
+        document.getElementById('header-title').innerText = name;
+        
+        // Reset semua match
         matches.forEach(m => {
-          document.getElementById(`teamA-${m}`).innerText = 'TBD';
-          document.getElementById(`scoreA-${m}`).innerText = '0';
-          document.getElementById(`teamB-${m}`).innerText = 'TBD';
-          document.getElementById(`scoreB-${m}`).innerText = '0';
+          m.teamA = 'TBD'; m.scoreA = 0;
+          m.teamB = 'TBD'; m.scoreB = 0;
+          m.status = 'upcoming'; m.formation = '';
         });
 
         closeModal('newTournamentModal');
+        renderBracket();
         alert(`Turnamen "${name}" berhasil dibuat! Bagan telah di-reset.`);
       }
+
+      // === GANTI PIALA ===
+      function changeTrophy() {
+        const fileInput = document.getElementById('trophyUpload');
+        const file = fileInput.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            document.getElementById('main-trophy').src = e.target.result;
+            closeModal('trophyModal');
+          }
+          reader.readAsDataURL(file);
+        } else {
+          alert("Pilih gambar terlebih dahulu!");
+        }
+      }
+
+      // === RESPONSIVE SCALING ===
+      function adjustBracketScale() {
+        const wrapper = document.getElementById('bracketWrapper');
+        const bracket = document.getElementById('mainBracket');
+        const bracketWidth = 1300; 
+        const screenWidth = window.innerWidth;
+        
+        if (screenWidth < bracketWidth) {
+          let scale = screenWidth / bracketWidth;
+          if (scale < 0.5) scale = 0.5;
+          bracket.style.transform = `scale(${scale})`;
+          const originalHeight = bracket.offsetHeight;
+          wrapper.style.height = (originalHeight * scale) + 'px';
+          wrapper.style.justifyContent = 'flex-start';
+        } else {
+          bracket.style.transform = 'scale(1)';
+          wrapper.style.height = 'auto';
+          wrapper.style.justifyContent = 'center';
+        }
+      }
+
+      window.addEventListener('load', () => {
+        renderBracket();
+        adjustBracketScale();
+      });
+      window.addEventListener('resize', adjustBracketScale);
 
     </script>
   </body>

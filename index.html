@@ -3,323 +3,923 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Minisoccer UNWAHAS - Dashboard & Login</title>
-    <!-- Tailwind CSS via CDN -->
+    <title>Minisoccer UNWAHAS - Manajemen Pertandingan</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <!-- Google Fonts: Plus Jakarta Sans -->
     <link
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-
     <style>
-      body {
-        font-family: "Plus Jakarta Sans", sans-serif;
-      }
-      /* Latar belakang hijau bertema lapangan */
+      body { font-family: "Plus Jakarta Sans", sans-serif; }
       .bg-green-pitch {
         background-color: #064e3b;
         background-image:
-          radial-gradient(
-            at 0% 0%,
-            rgba(16, 185, 129, 0.25) 0px,
-            transparent 50%
-          ),
-          radial-gradient(
-            at 100% 100%,
-            rgba(5, 150, 105, 0.35) 0px,
-            transparent 50%
-          ),
-          repeating-linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0.02) 0px,
-            rgba(255, 255, 255, 0.02) 40px,
-            transparent 40px,
-            transparent 80px
-          );
+          radial-gradient(at 0% 0%, rgba(16,185,129,.25) 0px, transparent 50%),
+          radial-gradient(at 100% 100%, rgba(5,150,105,.35) 0px, transparent 50%),
+          repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0px, rgba(255,255,255,.02) 40px, transparent 40px, transparent 80px);
+        background-attachment: fixed;
       }
-      .glass-card {
-        background: rgba(255, 255, 255, 0.96);
-        backdrop-filter: blur(10px);
-      }
+      .glass-card { background: rgba(255,255,255,.97); backdrop-filter: blur(10px); }
+      .card { background: rgba(6,78,59,.55); border: 1px solid rgba(52,211,153,.25); border-radius: 1rem; backdrop-filter: blur(6px); }
+
+      /* tombol */
+      .btn { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; font-weight:700; font-size:.85rem; padding:.6rem 1rem; border-radius:.75rem; transition:.15s; cursor:pointer; border:1px solid transparent; }
+      .btn-p { background:#059669; color:#fff; } .btn-p:hover { background:#047857; }
+      .btn-l { background:#34d399; color:#022c22; } .btn-l:hover { background:#6ee7b7; }
+      .btn-o { border-color:rgba(255,255,255,.7); color:#fff; } .btn-o:hover { background:rgba(255,255,255,.1); }
+      .btn-g { background:#f1f5f9; color:#334155; } .btn-g:hover { background:#e2e8f0; }
+      .btn-d { background:#fee2e2; color:#b91c1c; } .btn-d:hover { background:#fecaca; }
+      .btn-dd { background:rgba(239,68,68,.2); color:#fecaca; border-color:rgba(239,68,68,.4); } .btn-dd:hover { background:#ef4444; color:#fff; }
+      .btn:disabled { opacity:.45; cursor:not-allowed; }
+      .navlink { color:#d1fae5; padding:.5rem .75rem; border-radius:.6rem; font-size:.875rem; font-weight:600; border:1px solid transparent; transition:.15s; }
+      .navlink:hover { color:#fff; }
+      .navlink.active { border-color:#fff; color:#fff; }
+
+      /* form */
+      .inp { width:100%; padding:.55rem .7rem; background:#f8fafc; border:1px solid #e2e8f0; border-radius:.65rem; font-size:.85rem; color:#1e293b; }
+      .inp:focus { outline:none; border-color:#10b981; box-shadow:0 0 0 2px rgba(16,185,129,.35); }
+      .lbl { display:block; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#334155; margin-bottom:.35rem; }
+      .sbtn { width:30px; height:30px; border-radius:.5rem; background:#f1f5f9; color:#334155; display:inline-flex; align-items:center; justify-content:center; font-size:12px; }
+      .sbtn:hover { background:#d1fae5; color:#047857; }
+
+      /* avatar & titik */
+      .avatar { display:inline-flex; align-items:center; justify-content:center; border-radius:12px; font-weight:800; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.4); flex:none; }
+      .dot { display:inline-block; width:8px; height:8px; border-radius:50%; flex:none; }
+
+      /* bagan */
+      .bracket-wrap { overflow-x:auto; padding:8px 4px 18px; }
+      .bracket { display:flex; align-items:stretch; justify-content:center; gap:28px; min-width:max-content; margin:0 auto; }
+      .bcol { display:flex; flex-direction:column; width:178px; }
+      .bcol.bcenter { width:220px; }
+      .bcol-h { text-align:center; font-size:10px; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:#6ee7b7; margin-bottom:10px; }
+      .bcol-b { flex:1; display:flex; flex-direction:column; justify-content:space-around; gap:14px; }
+      .mwrap { position:relative; cursor:pointer; }
+      .mwrap.ro { cursor:default; }
+      .side-l .mwrap::after { content:''; position:absolute; top:50%; right:-14px; width:14px; border-top:2px solid rgba(110,231,183,.4); }
+      .side-r .mwrap::before { content:''; position:absolute; top:50%; left:-14px; width:14px; border-top:2px solid rgba(110,231,183,.4); }
+      .mcard { background:#052e22; border:1px solid rgba(52,211,153,.35); border-radius:12px; overflow:hidden; transition:.15s; }
+      .mwrap:not(.ro):hover .mcard { border-color:#34d399; transform:translateY(-1px); }
+      .mcard.live { border-color:#f87171; box-shadow:0 0 0 2px rgba(248,113,113,.3); }
+      .mrow { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:7px 10px; font-size:12px; font-weight:700; color:#d1fae5; }
+      .mrow + .mrow { border-top:1px solid rgba(52,211,153,.18); }
+      .mrow.win { background:rgba(16,185,129,.3); color:#fff; }
+      .mrow.lose { opacity:.5; }
+      .mrow.empty { color:rgba(167,243,208,.6); font-weight:500; font-style:italic; }
+      .mrow .sc { font-variant-numeric:tabular-nums; font-weight:800; }
+      .mrow .sc small { font-weight:600; opacity:.8; }
+      .mmeta { display:flex; justify-content:space-between; padding:4px 10px; font-size:10px; font-weight:700; color:#6ee7b7; background:rgba(0,0,0,.25); letter-spacing:.04em; }
+
+      /* lapangan formasi */
+      .pitch { position:relative; border-radius:14px; padding:18px 8px; display:flex; flex-direction:column; justify-content:space-around; gap:16px; min-height:330px; border:2px solid rgba(255,255,255,.75); overflow:hidden; }
+      .pitch.foot { background:repeating-linear-gradient(0deg,#15803d 0 44px,#16a34a 44px 88px); }
+      .pitch.foot::before { content:''; position:absolute; left:0; right:0; top:50%; border-top:2px solid rgba(255,255,255,.7); }
+      .pitch.foot::after { content:''; position:absolute; left:50%; top:50%; width:72px; height:72px; margin:-36px 0 0 -36px; border:2px solid rgba(255,255,255,.7); border-radius:50%; }
+      .pitch.voli { background:linear-gradient(180deg,#c2410c,#ea580c); }
+      .pitch.voli::before { content:'JARING'; position:absolute; left:0; right:0; top:0; text-align:center; font-size:9px; font-weight:800; letter-spacing:.3em; color:#fff; border-top:5px dashed #fff; padding-top:2px; }
+      .prow { position:relative; z-index:2; display:flex; justify-content:space-around; gap:6px; }
+      .pl { display:flex; flex-direction:column; align-items:center; width:64px; }
+      .pn { width:34px; height:34px; border-radius:50%; border:2px solid #fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.5); }
+      .pname { margin-top:3px; font-size:10px; font-weight:700; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,.7); text-align:center; line-height:1.1; }
+
+      .hrow { padding:12px 14px; border-radius:12px; cursor:pointer; transition:.15s; background:rgba(5,46,34,.6); border:1px solid rgba(52,211,153,.18); }
+      .hrow:hover { border-color:#34d399; }
+      .trophy-glow { filter:drop-shadow(0 0 18px rgba(251,191,36,.45)); }
     </style>
   </head>
   <body class="bg-green-pitch min-h-screen text-slate-800 flex flex-col">
-    <!-- ==================== NAVBAR / HEADER ==================== -->
-    <nav
-      class="bg-emerald-950/85 backdrop-blur-md border-b border-emerald-700/50 sticky top-0 z-50"
-    >
-      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- definisi gradien emas untuk piala -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <defs>
+        <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#fef3c7" />
+          <stop offset=".45" stop-color="#fbbf24" />
+          <stop offset="1" stop-color="#b45309" />
+        </linearGradient>
+      </defs>
+    </svg>
+
+    <!-- ==================== NAVBAR ==================== -->
+    <nav class="bg-emerald-950/85 backdrop-blur-md border-b border-emerald-700/50 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center h-16">
-          <!-- Brand / Logo -->
-          <div
-            class="flex items-center space-x-3 cursor-pointer"
-            onclick="showPage('dashboard')"
-          >
-            <div
-              class="bg-emerald-500 text-emerald-950 p-2 rounded-xl shadow-lg shadow-emerald-500/20"
-            >
+          <a href="#/" class="flex items-center space-x-3">
+            <div class="bg-emerald-500 text-emerald-950 p-2 rounded-xl shadow-lg shadow-emerald-500/20">
               <i class="fa-solid fa-futbol text-xl"></i>
             </div>
             <div>
-              <span
-                class="text-white font-extrabold text-lg tracking-tight block leading-none"
-                >UNWAHAS</span
-              >
-              <span
-                class="text-emerald-400 text-xs font-semibold tracking-wider uppercase"
-                >Minisoccer</span
-              >
+              <span class="text-white font-extrabold text-lg tracking-tight block leading-none">UNWAHAS</span>
+              <span class="text-emerald-400 text-xs font-semibold tracking-wider uppercase">Minisoccer</span>
             </div>
-          </div>
-
-          <!-- Navigasi & Tombol Login -->
-          <div class="flex items-center space-x-3">
-            <button
-              onclick="showPage('dashboard')"
-              class="text-emerald-100 hover:text-white px-3 py-2 rounded-lg text-sm font-semibold transition"
-            >
-              Dashboard
+          </a>
+          <div class="flex items-center gap-1 sm:gap-2">
+            <a href="#/" id="nav-home" class="navlink">Dashboard</a>
+            <a href="#/riwayat" id="nav-hist" class="navlink">Riwayat</a>
+            <button onclick="openCreateComp()" class="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold px-3 sm:px-4 py-2 rounded-xl text-sm transition shadow-md flex items-center gap-2">
+              <i class="fa-solid fa-plus"></i><span class="hidden sm:inline">Kompetisi Baru</span>
             </button>
-
-            <!-- Opsi Login (Tampil saat belum login) -->
-            <button
-              id="btn-login-nav"
-              onclick="showPage('login')"
-              class="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold px-4 py-2 rounded-xl text-sm transition shadow-md flex items-center gap-2"
-            >
-              <i class="fa-solid fa-right-to-bracket"></i>
-              <span>Login</span>
-            </button>
-
-            <!-- Status Setelah Login -->
-            <div id="user-nav-info" class="hidden flex items-center gap-2.5">
-              <span
-                class="bg-emerald-800/80 border border-emerald-600 text-emerald-200 text-xs font-semibold px-3 py-1.5 rounded-full"
-              >
-                <i class="fa-solid fa-circle-check mr-1 text-emerald-400"></i>
-                Mode Login Aktif
-              </span>
-              <button
-                onclick="handleLogout()"
-                class="bg-red-500/20 hover:bg-red-500 text-red-200 hover:text-white border border-red-500/40 px-3 py-1.5 rounded-lg text-xs font-semibold transition"
-              >
-                Logout
-              </button>
-            </div>
           </div>
         </div>
       </div>
     </nav>
 
-    <!-- ==================== HALAMAN DASHBOARD ==================== -->
-    <main
-      id="page-dashboard"
-      class="flex-grow max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10"
-    >
-      <!-- Kartu Utama Dashboard -->
-      <div
-        class="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-6 sm:p-8 border border-emerald-600/40 shadow-xl text-white relative overflow-hidden"
-      >
-        <div class="relative z-10 max-w-2xl">
-          <span
-            class="inline-block bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider"
-          >
-            Dashboard Utama
-          </span>
-          <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">
-            Minisoccer UNWAHAS
-          </h1>
-          <p
-            class="text-emerald-100/85 text-sm sm:text-base leading-relaxed mb-6"
-          >
-            Selamat datang di Minisoccer UNWAHAS. Halaman ini menjadi gerbang
-            utama bagi seluruh pengguna dan pengelola dalam mengakses sistem
-            informasi minisoccer kampus. Gunakan tombol login di bagian atas
-            untuk masuk ke dalam sistem.
-          </p>
+    <main id="app" class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white"></main>
 
-          <!-- Tombol Akses Login di Area Dashboard -->
-          <div
-            id="dashboard-login-cta"
-            class="flex flex-wrap items-center gap-3"
-          >
-            <button
-              onclick="showPage('login')"
-              class="bg-emerald-400 hover:bg-emerald-300 text-emerald-950 font-extrabold px-5 py-2.5 rounded-xl text-sm shadow-lg transition inline-flex items-center gap-2"
-            >
-              <i class="fa-solid fa-key"></i>
-              <span>Buka Halaman Login</span>
-            </button>
-          </div>
+    <div id="modal"></div>
+    <div id="toast" style="display:none"></div>
 
-          <!-- Notifikasi Saat Sudah Login -->
-          <div
-            id="dashboard-logged-in-banner"
-            class="hidden bg-emerald-950/60 border border-emerald-400/40 rounded-xl p-4 text-sm text-emerald-100"
-          >
-            <i class="fa-solid fa-user-check text-emerald-400 mr-2"></i>
-            Anda sedang berada di tampilan
-            <strong>Dashboard setelah Login</strong> (simulasi frontend).
-          </div>
-        </div>
-
-        <!-- Dekorasi Ikon -->
-        <i
-          class="fa-regular fa-futbol absolute -right-6 -bottom-8 text-9xl text-emerald-400/10 rotate-12"
-        ></i>
-      </div>
-    </main>
-
-    <!-- ==================== HALAMAN LOGIN ==================== -->
-    <main
-      id="page-login"
-      class="hidden flex-grow flex items-center justify-center px-4 py-12"
-    >
-      <div
-        class="glass-card max-w-md w-full rounded-3xl p-8 shadow-2xl border border-emerald-200"
-      >
-        <!-- Header Form Login -->
-        <div class="text-center mb-8">
-          <div
-            class="w-16 h-16 bg-emerald-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-600/30"
-          >
-            <i class="fa-solid fa-futbol text-3xl"></i>
-          </div>
-          <h2 class="text-2xl font-extrabold text-slate-800">Login</h2>
-          <p class="text-sm text-slate-500 mt-1">
-            Masuk ke Dashboard Minisoccer UNWAHAS
-          </p>
-        </div>
-
-        <!-- Form Input -->
-        <form onsubmit="handleLogin(event)" class="space-y-5">
-          <div>
-            <label
-              class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
-              >Username</label
-            >
-            <div class="relative">
-              <span
-                class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"
-              >
-                <i class="fa-solid fa-user"></i>
-              </span>
-              <input
-                type="text"
-                id="username"
-                required
-                placeholder="Masukkan username"
-                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label
-              class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2"
-              >Password</label
-            >
-            <div class="relative">
-              <span
-                class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"
-              >
-                <i class="fa-solid fa-lock"></i>
-              </span>
-              <input
-                type="password"
-                id="password"
-                required
-                placeholder="••••••••"
-                class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-              />
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between text-xs text-slate-500">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                class="rounded text-emerald-600 focus:ring-emerald-500"
-              />
-              <span>Ingat saya</span>
-            </label>
-          </div>
-
-          <button
-            type="submit"
-            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-emerald-600/30 transition transform active:scale-[0.99]"
-          >
-            Masuk
-          </button>
-        </form>
-
-        <!-- Tombol Kembali ke Dashboard -->
-        <div class="mt-6 text-center">
-          <button
-            onclick="showPage('dashboard')"
-            class="text-xs font-semibold text-slate-500 hover:text-emerald-700 transition inline-flex items-center gap-1.5"
-          >
-            <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
-          </button>
-        </div>
-      </div>
-    </main>
-
-    <!-- ==================== FOOTER ==================== -->
-    <footer
-      class="bg-emerald-950/90 border-t border-emerald-800/50 text-emerald-300/70 py-5 mt-auto"
-    >
-      <div class="max-w-5xl mx-auto px-4 text-center text-xs">
+    <footer class="bg-emerald-950/90 border-t border-emerald-800/50 text-emerald-300/70 py-5 mt-auto">
+      <div class="max-w-7xl mx-auto px-4 text-center text-xs space-y-2">
         <p class="font-semibold text-emerald-200">Minisoccer UNWAHAS</p>
+        <p class="flex items-center justify-center gap-4">
+          <button onclick="exportData()" class="hover:text-white"><i class="fa-solid fa-download mr-1"></i>Ekspor data</button>
+          <label class="hover:text-white cursor-pointer"><i class="fa-solid fa-upload mr-1"></i>Impor data
+            <input type="file" accept="application/json" class="hidden" onchange="importData(this)" />
+          </label>
+        </p>
       </div>
     </footer>
 
-    <!-- ==================== JAVASCRIPT ==================== -->
-    <script>
-      function showPage(page) {
-        const dashboard = document.getElementById("page-dashboard");
-        const login = document.getElementById("page-login");
+    <script id="app-js">
+      /* ============================================================
+         DATA & UTIL
+         ============================================================ */
+      const $ = (s) => document.querySelector(s);
+      const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+      const uid = () => Math.random().toString(36).slice(2, 10);
+      const LS = "unwahas_minisoccer_v1";
+      const app = $("#app");
 
-        if (page === "login") {
-          dashboard.classList.add("hidden");
-          login.classList.remove("hidden");
-        } else {
-          login.classList.add("hidden");
-          dashboard.classList.remove("hidden");
+      let db = { competitions: [] };
+      function load() {
+        try {
+          const r = localStorage.getItem(LS);
+          db = r ? JSON.parse(r) : { competitions: [] };
+          if (!db.competitions) db.competitions = [];
+        } catch (e) { db = { competitions: [] }; }
+      }
+      function save() {
+        try { localStorage.setItem(LS, JSON.stringify(db)); }
+        catch (e) { toast("Gagal menyimpan data (penyimpanan penuh/diblokir)", "err"); }
+      }
+
+      let unlocked = new Set();
+      try { unlocked = new Set(JSON.parse(sessionStorage.getItem("unlocked") || "[]")); } catch (e) {}
+      const persistUnlocked = () => { try { sessionStorage.setItem("unlocked", JSON.stringify([...unlocked])); } catch (e) {} };
+
+      const comp = (id) => db.competitions.find((c) => c.id === id);
+      const isOpen = (c) => unlocked.has(c.id);
+      const ui = { tab: "bagan" };
+
+      function cyrb53(str, seed = 0) {
+        let h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
+        for (let i = 0, ch; i < str.length; i++) {
+          ch = str.charCodeAt(i);
+          h1 = Math.imul(h1 ^ ch, 2654435761);
+          h2 = Math.imul(h2 ^ ch, 1597334677);
         }
+        h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+        h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+        return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+      }
+      const hashKey = (key, id) => cyrb53("unwahas|" + id + "|" + key);
+
+      const safeColor = (c) => (/^#[0-9a-f]{6}$/i.test(c || "") ? c : "#10b981");
+      const initials = (n) => {
+        const w = String(n || "?").trim().split(/\s+/);
+        return (w.length > 1 ? w[0][0] + w[1][0] : (w[0] || "?").slice(0, 2)).toUpperCase();
+      };
+      const avatar = (t, size = 36) =>
+        `<span class="avatar" style="width:${size}px;height:${size}px;font-size:${Math.round(size / 3)}px;background:${safeColor(t.color)}">${esc(initials(t.name))}</span>`;
+      const fmtDate = (v) => {
+        if (!v) return "";
+        const d = new Date(v);
+        if (isNaN(d)) return "";
+        return d.toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
+      };
+
+      /* ============================================================
+         KONFIGURASI OLAHRAGA
+         ============================================================ */
+      const SPORTS = {
+        sepakbola: { label: "Sepak Bola", icon: "fa-futbol", unit: "Gol", roles: "foot", players: 11, formations: ["4-4-2", "4-3-3", "3-5-2", "4-2-3-1", "5-3-2"] },
+        futsal: { label: "Futsal", icon: "fa-futbol", unit: "Gol", roles: "foot", players: 5, formations: ["1-2-1", "2-2", "3-1", "1-1-2"] },
+        minisoccer: { label: "Minisoccer", icon: "fa-futbol", unit: "Gol", roles: "foot", players: 7, formations: ["2-3-1", "3-2-1", "2-2-2", "3-3"] },
+        voli: { label: "Bola Voli", icon: "fa-volleyball", unit: "Set", roles: "voli", players: 6, formations: ["3-3", "3-2-1"] },
+      };
+      const ROLES = {
+        foot: [["GK", "Kiper"], ["DF", "Bek"], ["MF", "Gelandang"], ["FW", "Penyerang"], ["CAD", "Cadangan"]],
+        voli: [["FR", "Barisan Depan"], ["BK", "Barisan Belakang"], ["LB", "Libero"], ["CAD", "Cadangan"]],
+      };
+      const ROLE_LABEL = { GK: "Kiper", DF: "Bek", MF: "Gelandang", FW: "Penyerang", FR: "Depan", BK: "Belakang", LB: "Libero", CAD: "Cadangan" };
+      const PITCH = { foot: ["FW", "MF", "DF", "GK"], voli: ["FR", "BK", "LB"] };
+
+      function needs(sport, f) {
+        const n = String(f).split("-").map(Number);
+        if (SPORTS[sport].roles === "voli") return { FR: n[0] || 0, BK: n[1] || 0, LB: n[2] || 0 };
+        const DF = n[0] || 0, FW = n.length > 1 ? n[n.length - 1] : 0;
+        const MF = n.slice(1, -1).reduce((a, b) => a + b, 0);
+        return { GK: 1, DF, MF, FW };
+      }
+      function needsText(sport, f) {
+        const nd = needs(sport, f);
+        return Object.keys(nd).filter((k) => nd[k] > 0).map((k) => nd[k] + " " + ROLE_LABEL[k]).join(" · ");
+      }
+      function defaultRoles(sport, f, count) {
+        const nd = needs(sport, f);
+        const order = SPORTS[sport].roles === "voli" ? ["FR", "BK", "LB"] : ["GK", "DF", "MF", "FW"];
+        const r = [];
+        order.forEach((k) => { for (let i = 0; i < (nd[k] || 0); i++) r.push(k); });
+        while (r.length < count) r.push("CAD");
+        return r.slice(0, count);
       }
 
-      function handleLogin(e) {
-        e.preventDefault();
+      /* ============================================================
+         LOGIKA KOMPETISI
+         ============================================================ */
+      const R = (c) => Math.round(Math.log2(c.size));
+      const mOf = (c, id) => c.matches.find((m) => m.id === id);
+      const tOf = (c, id) => c.teams.find((t) => t.id === id) || null;
+      const placed = (c, id) => c.matches.some((x) => x.round === 1 && (x.a === id || x.b === id));
+      const nextOf = (c, m) => (m.round >= R(c) ? null : c.matches.find((x) => x.round === m.round + 1 && x.index === Math.floor(m.index / 2)));
+      const setNextSlot = (c, m, teamId) => { const n = nextOf(c, m); if (n) n[m.index % 2 === 0 ? "a" : "b"] = teamId; };
 
-        document.getElementById("btn-login-nav").classList.add("hidden");
-        document.getElementById("user-nav-info").classList.remove("hidden");
+      function roundName(r, round) {
+        const d = r - round;
+        return d === 0 ? "Final" : d === 1 ? "Semi Final" : d === 2 ? "Perempat Final" : "Babak " + Math.pow(2, d + 1) + " Besar";
+      }
+      function mkMatches(size) {
+        const r = Math.round(Math.log2(size)), arr = [];
+        let no = 1;
+        for (let round = 1; round <= r; round++) {
+          const count = size / Math.pow(2, round);
+          for (let i = 0; i < count; i++)
+            arr.push({ id: uid(), no: no++, round, index: i, a: null, b: null, sa: null, sb: null, pa: null, pb: null, status: "pending", winner: null, bye: false, time: "", venue: "", note: "", finishedAt: null });
+        }
+        return arr;
+      }
+      function newComp({ name, sport, size, key, organizer }) {
+        const id = uid();
+        return { id, name, sport, size, organizer: organizer || "", keyHash: hashKey(key, id), createdAt: Date.now(), teams: [], matches: mkMatches(size), champion: null };
+      }
+      function compStatus(c) {
+        if (c.champion) return "finished";
+        if (c.matches.some((m) => m.status === "live")) return "live";
+        if (c.matches.some((m) => m.status === "done")) return "ongoing";
+        return "ready";
+      }
+      const ST = {
+        live: ["Berlangsung", "bg-red-500/20 text-red-200 border-red-400/40"],
+        ongoing: ["Sedang Bergulir", "bg-amber-500/20 text-amber-200 border-amber-400/40"],
+        ready: ["Siap Diisi", "bg-emerald-500/20 text-emerald-200 border-emerald-400/40"],
+        finished: ["Selesai", "bg-slate-500/30 text-slate-200 border-slate-400/40"],
+      };
+      const stBadge = (c) => { const [l, cl] = ST[compStatus(c)]; return `<span class="inline-block text-[11px] font-bold px-2.5 py-1 rounded-full border ${cl}">${l}</span>`; };
 
-        document.getElementById("dashboard-login-cta").classList.add("hidden");
-        document
-          .getElementById("dashboard-logged-in-banner")
-          .classList.remove("hidden");
+      function finishMatch(c, m) {
+        let w;
+        if (m.bye) w = m.a || m.b;
+        else if (m.sa > m.sb) w = m.a;
+        else if (m.sb > m.sa) w = m.b;
+        else w = m.pa > m.pb ? m.a : m.b;
+        m.winner = w; m.status = "done"; m.finishedAt = Date.now();
+        setNextSlot(c, m, w);
+        if (m.round === R(c)) c.champion = w;
+      }
+      const canReopen = (c, m) => { const n = nextOf(c, m); return !n || n.status === "pending"; };
+      function reopenMatch(c, m) {
+        setNextSlot(c, m, null);
+        if (m.round === R(c)) c.champion = null;
+        m.winner = null; m.finishedAt = null;
+        if (m.bye) { m.bye = false; m.status = "pending"; } else m.status = "live";
+      }
+      function record(c, id) {
+        const r = { p: 0, w: 0, l: 0, gf: 0, ga: 0 };
+        c.matches.forEach((m) => {
+          if (m.status !== "done" || m.bye || (m.a !== id && m.b !== id)) return;
+          const mine = m.a === id ? "sa" : "sb", other = m.a === id ? "sb" : "sa";
+          r.p++; r.gf += m[mine] || 0; r.ga += m[other] || 0;
+          m.winner === id ? r.w++ : r.l++;
+        });
+        return r;
+      }
+      const doneMatches = (c) => c.matches.filter((m) => m.status === "done" && !m.bye).map((m) => ({ c, m }));
 
-        showPage("dashboard");
+      /* ============================================================
+         UI HELPER: MODAL & TOAST
+         ============================================================ */
+      function showModal(html, wide) {
+        $("#modal").innerHTML = `<div class="fixed inset-0 z-[60] flex items-start sm:items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div class="absolute inset-0 bg-black/60" onclick="closeModal()"></div>
+          <div class="relative glass-card w-full ${wide ? "max-w-3xl" : "max-w-lg"} rounded-2xl shadow-2xl border border-emerald-200 my-auto text-slate-800">${html}</div></div>`;
+      }
+      function closeModal() { $("#modal").innerHTML = ""; }
+      const mHead = (t, s) => `<div class="flex items-start justify-between gap-3 px-6 pt-5 pb-3 border-b border-slate-100"><div><h3 class="text-lg font-extrabold">${t}</h3>${s ? `<p class="text-xs text-slate-500 mt-0.5">${s}</p>` : ""}</div><button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 p-1"><i class="fa-solid fa-xmark text-lg"></i></button></div>`;
+      function toast(msg, type) {
+        const t = $("#toast");
+        t.textContent = msg;
+        t.className = "fixed bottom-5 left-1/2 -translate-x-1/2 z-[80] px-4 py-2.5 rounded-xl text-sm font-semibold shadow-xl max-w-[90vw] text-center " + (type === "err" ? "bg-red-600 text-white" : "bg-emerald-400 text-emerald-950");
+        t.style.display = "block";
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => (t.style.display = "none"), 2800);
+      }
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+      /* ============================================================
+         KOMPONEN: PIALA, KARTU PERTANDINGAN, BAGAN
+         ============================================================ */
+      function trophySVG(size = 120) {
+        return `<svg class="trophy-glow" width="${size}" height="${Math.round(size * 1.17)}" viewBox="0 0 120 140" aria-label="Piala">
+          <path d="M30 10 H90 V50 C90 72 76 86 60 88 C44 86 30 72 30 50 Z" fill="url(#gold)"/>
+          <path d="M30 20 H14 C14 46 24 56 36 60" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round"/>
+          <path d="M90 20 H106 C106 46 96 56 84 60" fill="none" stroke="url(#gold)" stroke-width="7" stroke-linecap="round"/>
+          <rect x="54" y="88" width="12" height="22" fill="url(#gold)"/>
+          <rect x="38" y="108" width="44" height="10" rx="3" fill="url(#gold)"/>
+          <rect x="30" y="118" width="60" height="14" rx="4" fill="#b45309"/>
+          <circle cx="60" cy="42" r="14" fill="#fef3c7" opacity=".85"/>
+          <path d="M60 33 L66 38 L64 46 H56 L54 38 Z" fill="#92400e" opacity=".75"/>
+          <path d="M36 14 H46 V50 C40 46 36 36 36 14 Z" fill="#fff" opacity=".25"/>
+        </svg>`;
       }
 
-      function handleLogout() {
-        document.getElementById("btn-login-nav").classList.remove("hidden");
-        document.getElementById("user-nav-info").classList.add("hidden");
-
-        document
-          .getElementById("dashboard-login-cta")
-          .classList.remove("hidden");
-        document
-          .getElementById("dashboard-logged-in-banner")
-          .classList.add("hidden");
+      function mCard(c, m, o) {
+        const ta = tOf(c, m.a), tb = tOf(c, m.b);
+        const done = m.status === "done", live = m.status === "live";
+        const row = (t, slot, sc, pen) => {
+          if (!t) return `<div class="mrow empty"><span class="truncate">${m.bye ? "BYE" : m.round === 1 ? "Slot kosong" : "Menunggu pemenang"}</span></div>`;
+          const win = done && m.winner && m.winner === m[slot];
+          const lose = done && m.winner && m.winner !== m[slot];
+          const showSc = (live || done) && !m.bye && sc != null;
+          const showPen = done && !m.bye && m.sa === m.sb && pen != null;
+          return `<div class="mrow ${win ? "win" : ""} ${lose ? "lose" : ""}"><span class="flex items-center gap-1.5 min-w-0"><i class="dot" style="background:${safeColor(t.color)}"></i><span class="truncate">${esc(t.name)}</span></span><span class="sc">${showSc ? sc : ""}${showPen ? ` <small>(${pen})</small>` : ""}</span></div>`;
+        };
+        const meta = live
+          ? `<span class="text-red-300"><i class="fa-solid fa-circle text-[6px] animate-pulse mr-1"></i>LIVE</span>`
+          : done ? (m.bye ? "Lolos otomatis" : "Selesai") : m.time ? esc(fmtDate(m.time)) : "Belum mulai";
+        const click = o.readonly ? "" : `onclick="openMatch('${c.id}','${m.id}')"`;
+        return `<div class="mwrap ${o.readonly ? "ro" : ""}" ${click}><div class="mcard ${live ? "live" : ""}">${row(ta, "a", m.sa, m.pa)}${row(tb, "b", m.sb, m.pb)}<div class="mmeta"><span>M${m.no}</span><span>${meta}</span></div></div></div>`;
       }
+
+      function bracketHTML(c, o = {}) {
+        const r = R(c);
+        const ms = (round, side) => {
+          const all = c.matches.filter((m) => m.round === round).sort((a, b) => a.index - b.index);
+          const half = all.length / 2;
+          return side === "L" ? all.slice(0, half) : all.slice(half);
+        };
+        const colHTML = (round, side) =>
+          `<div class="bcol side-${side.toLowerCase()}"><div class="bcol-h">${roundName(r, round)}</div><div class="bcol-b">${ms(round, side).map((m) => mCard(c, m, o)).join("")}</div></div>`;
+        const fin = c.matches.find((m) => m.round === r);
+        const champ = c.champion ? tOf(c, c.champion) : null;
+        const center = `<div class="bcol bcenter"><div class="bcol-h">Final</div><div class="bcol-b" style="justify-content:center;align-items:center;gap:14px">
+          ${trophySVG(118)}
+          ${champ
+            ? `<div class="text-center"><div class="text-[10px] tracking-[.3em] text-amber-300 font-extrabold">JUARA</div><div class="font-extrabold text-xl leading-tight">${esc(champ.name)}</div></div>`
+            : `<div class="text-xs text-emerald-300/70 font-semibold tracking-wide">Juara?</div>`}
+          <div class="w-full">${mCard(c, fin, o)}</div></div></div>`;
+        let h = '<div class="bracket-wrap"><div class="bracket">';
+        for (let i = 1; i < r; i++) h += colHTML(i, "L");
+        h += center;
+        for (let i = r - 1; i >= 1; i--) h += colHTML(i, "R");
+        return h + "</div></div>";
+      }
+
+      function historyRow(c, m, showComp) {
+        const ta = tOf(c, m.a), tb = tOf(c, m.b);
+        if (!ta || !tb) return "";
+        const wa = m.winner === m.a, wb = m.winner === m.b;
+        const pen = m.sa === m.sb && m.pa != null ? ` <span class="text-[11px] text-amber-300 font-semibold">(pen ${m.pa}-${m.pb})</span>` : "";
+        return `<div class="hrow" onclick="openMatch('${c.id}','${m.id}')">
+          <div class="text-[11px] text-emerald-300 font-semibold truncate">${showComp ? esc(c.name) + " · " : ""}${roundName(R(c), m.round)} · ${esc(fmtDate(m.finishedAt))}</div>
+          <div class="flex items-center gap-3 mt-1.5">
+            <span class="flex-1 text-right font-bold truncate ${wa ? "text-white" : "text-emerald-200/60"}">${esc(ta.name)}</span>
+            <span class="px-3 py-1 rounded-lg bg-black/30 font-extrabold tabular-nums whitespace-nowrap">${m.sa} - ${m.sb}${pen}</span>
+            <span class="flex-1 font-bold truncate ${wb ? "text-white" : "text-emerald-200/60"}">${esc(tb.name)}</span>
+          </div></div>`;
+      }
+
+      /* ============================================================
+         HALAMAN: DASHBOARD
+         ============================================================ */
+      function renderHome() {
+        document.title = "Minisoccer UNWAHAS - Manajemen Pertandingan";
+        const comps = [...db.competitions].sort((a, b) => {
+          const w = { live: 0, ongoing: 1, ready: 2, finished: 3 };
+          return w[compStatus(a)] - w[compStatus(b)] || b.createdAt - a.createdAt;
+        });
+        const live = [];
+        comps.forEach((c) => c.matches.forEach((m) => { if (m.status === "live") live.push({ c, m }); }));
+        const allDone = comps.reduce((n, c) => n + doneMatches(c).length, 0);
+
+        let h = `<div class="bg-gradient-to-r from-emerald-800 to-teal-900 rounded-2xl p-6 sm:p-8 border border-emerald-600/40 shadow-xl text-white relative overflow-hidden">
+          <div class="relative z-10 max-w-2xl">
+            <span class="inline-block bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Dashboard Utama</span>
+            <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight mb-3">Minisoccer UNWAHAS</h1>
+            <p class="text-emerald-100/85 text-sm sm:text-base leading-relaxed mb-5">Kelola bagan pertandingan sepak bola, futsal, minisoccer, dan voli antar organisasi maupun fakultas. Setiap kompetisi dilindungi kunci penyelenggara, jadi hanya pembuat acara yang dapat mengubah pertandingan.</p>
+            <div class="flex flex-wrap items-center gap-3">
+              <button onclick="openCreateComp()" class="btn btn-l !font-extrabold shadow-lg"><i class="fa-solid fa-plus"></i>Buat Kompetisi Baru</button>
+              <a href="#/riwayat" class="btn btn-o"><i class="fa-solid fa-clock-rotate-left"></i>Riwayat Pertandingan</a>
+            </div>
+            <div class="flex flex-wrap gap-2 mt-5 text-xs font-semibold">
+              <span class="px-3 py-1 rounded-full bg-black/25 border border-emerald-500/30">${comps.length} kompetisi</span>
+              <span class="px-3 py-1 rounded-full bg-black/25 border border-emerald-500/30">${live.length} sedang berlangsung</span>
+              <span class="px-3 py-1 rounded-full bg-black/25 border border-emerald-500/30">${allDone} pertandingan selesai</span>
+            </div>
+          </div>
+          <i class="fa-regular fa-futbol absolute -right-6 -bottom-8 text-9xl text-emerald-400/10 rotate-12"></i>
+        </div>`;
+
+        if (live.length) {
+          h += `<section class="mt-8"><h2 class="text-lg font-extrabold mb-3 flex items-center gap-2"><i class="fa-solid fa-circle text-[9px] text-red-400 animate-pulse"></i>Pertandingan Sedang Berlangsung</h2><div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">`;
+          live.forEach(({ c, m }) => {
+            const ta = tOf(c, m.a), tb = tOf(c, m.b);
+            if (!ta || !tb) return;
+            h += `<div class="card p-4 cursor-pointer hover:border-emerald-300 transition" onclick="openMatch('${c.id}','${m.id}')">
+              <div class="flex justify-between items-center gap-2 text-xs"><span class="text-emerald-300 font-bold truncate">${esc(c.name)} · ${roundName(R(c), m.round)}</span><span class="text-red-300 font-extrabold whitespace-nowrap"><i class="fa-solid fa-circle text-[6px] animate-pulse mr-1"></i>LIVE</span></div>
+              <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 mt-4">
+                <div class="text-center">${avatar(ta, 44)}<div class="mt-1.5 text-sm font-bold break-words">${esc(ta.name)}</div></div>
+                <div class="text-3xl font-extrabold tabular-nums">${m.sa ?? 0}<span class="text-emerald-400/60 mx-1">:</span>${m.sb ?? 0}</div>
+                <div class="text-center">${avatar(tb, 44)}<div class="mt-1.5 text-sm font-bold break-words">${esc(tb.name)}</div></div>
+              </div>
+              <div class="mt-4 text-right"><a href="#/k/${c.id}" onclick="event.stopPropagation()" class="text-xs font-bold text-emerald-300 hover:text-white">Buka bagan <i class="fa-solid fa-arrow-right ml-1"></i></a></div>
+            </div>`;
+          });
+          h += `</div></section>`;
+        } else {
+          const open = comps.filter((c) => compStatus(c) !== "finished");
+          h += `<section class="mt-8"><div class="card p-4 flex items-center gap-3 text-sm"><i class="fa-regular fa-clock text-emerald-300 text-lg"></i><span class="text-emerald-100">Belum ada pertandingan yang sedang berlangsung. ${open.length ? "Berikut bagan yang siap diisi:" : "Berikut contoh bagan yang siap diisi."}</span></div>`;
+          if (open.length) {
+            open.slice(0, 2).forEach((c) => {
+              h += `<div class="card p-4 sm:p-5 mt-4"><div class="flex flex-wrap items-center justify-between gap-2 mb-2"><div class="flex items-center gap-2 min-w-0"><i class="fa-solid ${SPORTS[c.sport].icon} text-emerald-300"></i><h3 class="font-extrabold truncate">${esc(c.name)}</h3>${stBadge(c)}</div><a href="#/k/${c.id}" class="btn btn-l !py-1.5">Buka &amp; Isi Bagan</a></div>${bracketHTML(c)}</div>`;
+            });
+            if (open.length > 2) h += `<p class="text-xs text-emerald-300/80 mt-3">+ ${open.length - 2} kompetisi lain di daftar bawah.</p>`;
+          } else {
+            const tpl = { id: "tpl", name: "Contoh", sport: "futsal", size: 8, teams: [], matches: mkMatches(8), champion: null };
+            h += `<div class="card p-4 sm:p-5 mt-4"><div class="flex flex-wrap items-center justify-between gap-2 mb-2"><h3 class="font-extrabold">Contoh Bagan (8 Tim)</h3><div class="flex gap-2"><button onclick="seedDemo()" class="btn btn-o !py-1.5">Muat Data Contoh</button><button onclick="openCreateComp()" class="btn btn-l !py-1.5">Buat Kompetisi</button></div></div>${bracketHTML(tpl, { readonly: true })}</div>`;
+          }
+          h += `</section>`;
+        }
+
+        h += `<section class="mt-10"><h2 class="text-lg font-extrabold mb-3">Daftar Kompetisi</h2>`;
+        if (!comps.length) h += `<div class="card p-6 text-center text-emerald-200 text-sm">Belum ada kompetisi. Klik <b>Kompetisi Baru</b> untuk memulai.</div>`;
+        else {
+          h += `<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">`;
+          comps.forEach((c) => {
+            const sp = SPORTS[c.sport], champ = c.champion ? tOf(c, c.champion) : null;
+            h += `<a href="#/k/${c.id}" class="card p-4 block hover:border-emerald-300 transition">
+              <div class="flex items-center justify-between gap-2"><span class="text-xs font-bold text-emerald-300"><i class="fa-solid ${sp.icon} mr-1"></i>${sp.label}</span>${stBadge(c)}</div>
+              <h3 class="font-extrabold text-base mt-2 leading-snug">${esc(c.name)}</h3>
+              <p class="text-xs text-emerald-200/80 mt-1">${c.teams.length}/${c.size} tim${c.organizer ? " · " + esc(c.organizer) : ""}</p>
+              ${champ ? `<p class="text-xs font-bold text-amber-300 mt-2"><i class="fa-solid fa-trophy mr-1"></i>Juara: ${esc(champ.name)}</p>` : ""}
+            </a>`;
+          });
+          h += `</div>`;
+        }
+        h += `</section>`;
+
+        const recent = comps.flatMap(doneMatches).sort((a, b) => b.m.finishedAt - a.m.finishedAt).slice(0, 5);
+        if (recent.length) {
+          h += `<section class="mt-10"><div class="flex items-center justify-between mb-3"><h2 class="text-lg font-extrabold">Riwayat Terbaru</h2><a href="#/riwayat" class="text-xs font-bold text-emerald-300 hover:text-white">Lihat semua</a></div><div class="space-y-2">${recent.map(({ c, m }) => historyRow(c, m, true)).join("")}</div></section>`;
+        }
+        app.innerHTML = h;
+      }
+
+      /* ============================================================
+         HALAMAN: RIWAYAT GLOBAL
+         ============================================================ */
+      const hFilter = { comp: "", sport: "" };
+      function renderHistory() {
+        document.title = "Riwayat - Minisoccer UNWAHAS";
+        let list = db.competitions.filter((c) => (!hFilter.comp || c.id === hFilter.comp) && (!hFilter.sport || c.sport === hFilter.sport)).flatMap(doneMatches).sort((a, b) => b.m.finishedAt - a.m.finishedAt);
+        app.innerHTML = `<h1 class="text-2xl font-extrabold mb-1">Riwayat Pertandingan</h1><p class="text-sm text-emerald-200/80 mb-5">Semua pertandingan yang sudah selesai dari seluruh kompetisi.</p>
+          <div class="flex flex-wrap gap-3 mb-5">
+            <select class="inp !w-auto !bg-emerald-950 !text-white !border-emerald-600" onchange="hFilter.comp=this.value;render()"><option value="">Semua kompetisi</option>${db.competitions.map((c) => `<option value="${c.id}" ${hFilter.comp === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select>
+            <select class="inp !w-auto !bg-emerald-950 !text-white !border-emerald-600" onchange="hFilter.sport=this.value;render()"><option value="">Semua cabang</option>${Object.entries(SPORTS).map(([k, v]) => `<option value="${k}" ${hFilter.sport === k ? "selected" : ""}>${v.label}</option>`).join("")}</select>
+          </div>
+          <div class="space-y-2">${list.length ? list.map(({ c, m }) => historyRow(c, m, true)).join("") : `<div class="card p-6 text-center text-sm text-emerald-200">Belum ada pertandingan yang selesai.</div>`}</div>`;
+      }
+
+      /* ============================================================
+         HALAMAN: DETAIL KOMPETISI
+         ============================================================ */
+      function renderComp(id) {
+        const c = comp(id);
+        if (!c) {
+          app.innerHTML = `<div class="card p-8 text-center"><p class="mb-4">Kompetisi tidak ditemukan.</p><a href="#/" class="btn btn-l">Kembali ke Dashboard</a></div>`;
+          return;
+        }
+        document.title = c.name + " - Minisoccer UNWAHAS";
+        const sp = SPORTS[c.sport], open = isOpen(c);
+        const tab = ui.tab;
+        let h = `<a href="#/" class="text-xs font-bold text-emerald-300 hover:text-white"><i class="fa-solid fa-arrow-left mr-1"></i>Dashboard</a>
+          <div class="flex flex-wrap items-start justify-between gap-4 mt-3 mb-5">
+            <div><div class="flex flex-wrap items-center gap-2 mb-1"><span class="text-xs font-bold text-emerald-300"><i class="fa-solid ${sp.icon} mr-1"></i>${sp.label}</span>${stBadge(c)}</div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold leading-tight">${esc(c.name)}</h1>
+              ${c.organizer ? `<p class="text-sm text-emerald-200/80 mt-1">Penyelenggara: ${esc(c.organizer)}</p>` : ""}</div>
+            <div class="flex flex-wrap items-center gap-2">${open
+              ? `<span class="text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-400/20 border border-emerald-400/40 text-emerald-200"><i class="fa-solid fa-lock-open mr-1"></i>Mode Penyelenggara</span><button onclick="lockComp('${c.id}')" class="btn btn-o !py-1.5">Kunci Lagi</button><button onclick="deleteComp('${c.id}')" class="btn btn-dd !py-1.5"><i class="fa-solid fa-trash"></i></button>`
+              : `<button onclick="openKeyModal('${c.id}')" class="btn btn-l"><i class="fa-solid fa-key"></i>Buka Kunci Penyelenggara</button>`}</div>
+          </div>
+          <div class="flex gap-1 border-b border-emerald-700/50 mb-5 overflow-x-auto">
+            ${[["bagan", "Bagan", "fa-sitemap"], ["tim", `Tim (${c.teams.length})`, "fa-users"], ["riwayat", "Riwayat", "fa-clock-rotate-left"]]
+              .map(([k, l, i]) => `<button onclick="setTab('${k}')" class="px-4 py-2.5 text-sm font-bold whitespace-nowrap border-b-2 ${tab === k ? "border-emerald-300 text-white" : "border-transparent text-emerald-300/70 hover:text-white"}"><i class="fa-solid ${i} mr-1.5"></i>${l}</button>`).join("")}
+          </div>`;
+
+        if (tab === "bagan") {
+          const un = c.teams.filter((t) => !placed(c, t.id)).length;
+          const empt = c.matches.filter((m) => m.round === 1 && m.status === "pending").reduce((n, m) => n + (m.a ? 0 : 1) + (m.b ? 0 : 1), 0);
+          h += `<div class="card p-4 sm:p-5">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <p class="text-xs text-emerald-200/80">${open ? "Klik pertandingan untuk memilih tim, mengisi skor, dan mengakhiri laga." : "Klik pertandingan untuk melihat detail tim. Masukkan kunci penyelenggara untuk mengedit."} <b>${c.teams.length}/${c.size}</b> tim terdaftar.</p>
+              ${open ? `<div class="flex flex-wrap gap-2"><button onclick="openTeamForm('${c.id}')" class="btn btn-l !py-1.5"><i class="fa-solid fa-plus"></i>Tambah Tim</button><button onclick="shuffleFill('${c.id}')" class="btn btn-o !py-1.5" ${un && empt ? "" : "disabled"}><i class="fa-solid fa-shuffle"></i>Acak ke Slot Kosong</button></div>` : ""}
+            </div>${bracketHTML(c)}</div>`;
+        }
+
+        if (tab === "tim") {
+          h += `${open ? `<div class="mb-4"><button onclick="openTeamForm('${c.id}')" class="btn btn-l"><i class="fa-solid fa-plus"></i>Tambah Tim</button></div>` : ""}`;
+          if (!c.teams.length) h += `<div class="card p-6 text-center text-sm text-emerald-200">Belum ada tim terdaftar.</div>`;
+          else {
+            h += `<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">`;
+            c.teams.forEach((t) => {
+              const r = record(c, t.id);
+              h += `<div class="card p-4 cursor-pointer hover:border-emerald-300 transition" onclick="openTeam('${c.id}','${t.id}')"><div class="flex items-center gap-3">${avatar(t, 44)}<div class="min-w-0"><div class="font-extrabold truncate">${esc(t.name)}</div><div class="text-xs text-emerald-200/80">Formasi ${esc(t.formation)} · ${t.players.length} anggota</div></div></div>
+                <div class="flex gap-2 mt-3 text-[11px] font-bold"><span class="px-2 py-1 rounded-md bg-black/25">Main ${r.p}</span><span class="px-2 py-1 rounded-md bg-black/25">Menang ${r.w}</span><span class="px-2 py-1 rounded-md bg-black/25">Kalah ${r.l}</span><span class="px-2 py-1 rounded-md bg-black/25">${r.gf}-${r.ga}</span></div></div>`;
+            });
+            h += `</div>`;
+          }
+        }
+
+        if (tab === "riwayat") {
+          const done = doneMatches(c).sort((a, b) => b.m.finishedAt - a.m.finishedAt);
+          const up = c.matches.filter((m) => m.status !== "done" && m.a && m.b);
+          h += `<h2 class="font-extrabold mb-3">Pertandingan Selesai</h2><div class="space-y-2 mb-8">${done.length ? done.map(({ m }) => historyRow(c, m, false)).join("") : `<div class="card p-5 text-sm text-center text-emerald-200">Belum ada pertandingan yang selesai.</div>`}</div>`;
+          if (up.length) {
+            h += `<h2 class="font-extrabold mb-3">Berlangsung &amp; Akan Datang</h2><div class="space-y-2">${up.map((m) => `<div class="hrow" onclick="openMatch('${c.id}','${m.id}')"><div class="text-[11px] text-emerald-300 font-semibold">${roundName(R(c), m.round)} · ${m.status === "live" ? '<span class="text-red-300">LIVE</span>' : m.time ? esc(fmtDate(m.time)) : "Belum dijadwalkan"}</div><div class="font-bold mt-1">${esc(tOf(c, m.a).name)} <span class="text-emerald-400/60 mx-1">vs</span> ${esc(tOf(c, m.b).name)}</div></div>`).join("")}</div>`;
+          }
+        }
+        app.innerHTML = h;
+      }
+      const setTab = (t) => { ui.tab = t; render(); };
+
+      /* ============================================================
+         KUNCI PENYELENGGARA
+         ============================================================ */
+      function openKeyModal(cid, after) {
+        window._afterKey = after || null;
+        const c = comp(cid);
+        showModal(`${mHead("Kunci Penyelenggara", esc(c.name))}<div class="px-6 py-5">
+          <label class="lbl">Masukkan kunci</label>
+          <div class="relative"><span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400"><i class="fa-solid fa-lock"></i></span>
+          <input id="key-in" type="password" class="inp !pl-10 !py-3" placeholder="Kunci dari pembuat acara" onkeydown="if(event.key==='Enter')submitKey('${cid}')" autofocus /></div>
+          <p id="key-err" class="text-xs text-red-600 font-semibold mt-2 h-4"></p>
+          <button class="btn btn-p w-full mt-3 !py-3" onclick="submitKey('${cid}')">Buka Kunci</button></div>`);
+        setTimeout(() => $("#key-in") && $("#key-in").focus(), 50);
+      }
+      function submitKey(cid) {
+        const c = comp(cid), v = $("#key-in").value;
+        if (!c || hashKey(v, c.id) !== c.keyHash) { $("#key-err").textContent = "Kunci salah. Coba lagi."; return; }
+        unlocked.add(c.id); persistUnlocked(); closeModal();
+        toast("Kunci diterima. Anda dapat mengedit kompetisi ini.");
+        const f = window._afterKey; window._afterKey = null;
+        render(); if (f) f();
+      }
+      function lockComp(cid) { unlocked.delete(cid); persistUnlocked(); closeModal(); render(); toast("Kompetisi dikunci kembali"); }
+      function deleteComp(cid) {
+        const c = comp(cid);
+        if (!c || !isOpen(c)) return;
+        if (!confirm(`Hapus kompetisi "${c.name}" beserta seluruh tim dan riwayatnya? Tindakan ini tidak dapat dibatalkan.`)) return;
+        db.competitions = db.competitions.filter((x) => x.id !== cid); save();
+        location.hash = "#/"; toast("Kompetisi dihapus");
+      }
+
+      /* ============================================================
+         BUAT KOMPETISI
+         ============================================================ */
+      function openCreateComp() {
+        showModal(`${mHead("Kompetisi Baru", "Buat bagan pertandingan dan tetapkan kunci penyelenggara")}<div class="px-6 py-5 space-y-4">
+          <div><label class="lbl">Nama kompetisi</label><input id="cc-name" class="inp" placeholder="mis. Piala Rektor Futsal 2026" /></div>
+          <div><label class="lbl">Penyelenggara (opsional)</label><input id="cc-org" class="inp" placeholder="mis. BEM UNWAHAS" /></div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="lbl">Cabang olahraga</label><select id="cc-sport" class="inp">${Object.entries(SPORTS).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join("")}</select></div>
+            <div><label class="lbl">Jumlah slot tim</label><select id="cc-size" class="inp"><option value="4">4 tim</option><option value="8" selected>8 tim</option><option value="16">16 tim</option></select></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="lbl">Kunci penyelenggara</label><input id="cc-k1" type="password" class="inp" placeholder="min. 4 karakter" /></div>
+            <div><label class="lbl">Ulangi kunci</label><input id="cc-k2" type="password" class="inp" /></div>
+          </div>
+          <p class="text-xs text-slate-500"><i class="fa-solid fa-circle-info mr-1"></i>Kunci dipakai untuk mengedit tim, jadwal, dan skor. Simpan baik-baik, kunci tidak dapat dipulihkan.</p>
+          <p id="cc-err" class="text-xs text-red-600 font-semibold h-4"></p>
+          <button class="btn btn-p w-full !py-3" onclick="createComp()">Buat Kompetisi</button></div>`);
+      }
+      function createComp() {
+        const err = (m) => { $("#cc-err").textContent = m; };
+        const name = $("#cc-name").value.trim(), org = $("#cc-org").value.trim(), sport = $("#cc-sport").value, size = +$("#cc-size").value, k1 = $("#cc-k1").value, k2 = $("#cc-k2").value;
+        if (!name) return err("Nama kompetisi wajib diisi.");
+        if (k1.length < 4) return err("Kunci minimal 4 karakter.");
+        if (k1 !== k2) return err("Konfirmasi kunci tidak sama.");
+        const c = newComp({ name, sport, size, key: k1, organizer: org });
+        db.competitions.push(c); save();
+        unlocked.add(c.id); persistUnlocked(); ui.tab = "bagan"; closeModal();
+        location.hash = "#/k/" + c.id; toast("Kompetisi dibuat. Mulai tambahkan tim!");
+      }
+
+      /* ============================================================
+         TIM: LIHAT, TAMBAH, EDIT, HAPUS
+         ============================================================ */
+      function pitchHTML(c, t) {
+        if (!t.players.length) return `<div class="text-center text-sm text-slate-400 py-8">Belum ada anggota tim.</div>`;
+        const type = SPORTS[c.sport].roles, col = safeColor(t.color);
+        const rows = PITCH[type].map((k) => {
+          const ps = t.players.filter((p) => p.role === k);
+          if (!ps.length) return "";
+          return `<div class="prow">${ps.map((p) => `<div class="pl"><span class="pn" style="background:${col}">${esc(p.no ?? "")}</span><span class="pname">${esc(p.name)}</span></div>`).join("")}</div>`;
+        }).join("");
+        return `<div class="pitch ${type}">${rows || '<div class="text-center text-white text-sm relative z-10">Atur peran pemain (bukan Cadangan) agar tampil di lapangan.</div>'}</div>`;
+      }
+
+      function openTeam(cid, tid) {
+        const c = comp(cid), t = c && tOf(c, tid);
+        if (!t) return;
+        const r = record(c, t.id), open = isOpen(c);
+        const bench = t.players.filter((p) => p.role === "CAD");
+        const ms = c.matches.filter((m) => (m.a === t.id || m.b === t.id) && (m.status === "done" || m.status === "live") && !m.bye);
+        showModal(`${mHead(esc(t.name), `${SPORTS[c.sport].label} · Formasi ${esc(t.formation)} · ${esc(c.name)}`)}<div class="px-6 py-5">
+          <div class="flex gap-2 text-xs font-bold mb-4 flex-wrap"><span class="px-2.5 py-1 rounded-lg bg-slate-100">Main ${r.p}</span><span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">Menang ${r.w}</span><span class="px-2.5 py-1 rounded-lg bg-red-100 text-red-700">Kalah ${r.l}</span><span class="px-2.5 py-1 rounded-lg bg-slate-100">${SPORTS[c.sport].unit} ${r.gf}-${r.ga}</span></div>
+          <div class="max-w-sm mx-auto">${pitchHTML(c, t)}</div>
+          ${bench.length ? `<div class="mt-4"><div class="lbl">Cadangan</div><div class="flex flex-wrap gap-2">${bench.map((p) => `<span class="px-2.5 py-1 rounded-lg bg-slate-100 text-xs font-semibold">${esc(p.no ?? "")} · ${esc(p.name)}</span>`).join("")}</div></div>` : ""}
+          ${ms.length ? `<div class="mt-5"><div class="lbl">Pertandingan</div><div class="space-y-1.5">${ms.map((m) => { const o = tOf(c, m.a === t.id ? m.b : m.a); const my = m.a === t.id ? m.sa : m.sb, ot = m.a === t.id ? m.sb : m.sa; const res = m.status === "live" ? '<span class="text-red-500">LIVE</span>' : m.winner === t.id ? '<span class="text-emerald-600">Menang</span>' : '<span class="text-red-500">Kalah</span>'; return `<div class="flex justify-between text-sm bg-slate-50 rounded-lg px-3 py-2"><span>${roundName(R(c), m.round)} vs <b>${esc(o ? o.name : "?")}</b></span><span class="font-bold">${my}-${ot} · ${res}</span></div>`; }).join("")}</div></div>` : ""}
+          ${open ? `<div class="flex gap-2 mt-6"><button class="btn btn-g flex-1" onclick="openTeamForm('${c.id}','${t.id}')"><i class="fa-solid fa-pen"></i>Edit Tim</button><button class="btn btn-d" onclick="deleteTeam('${c.id}','${t.id}')"><i class="fa-solid fa-trash"></i>Hapus</button></div>` : ""}
+        </div>`);
+      }
+
+      function playerRowHTML(sport, p) {
+        const rl = ROLES[SPORTS[sport].roles];
+        return `<div class="pe grid grid-cols-[56px_1fr_120px_28px] gap-2 items-center"><input type="number" min="0" class="pe-no inp" placeholder="No" value="${esc(p.no ?? "")}" /><input type="text" class="pe-name inp" placeholder="Nama pemain" value="${esc(p.name || "")}" /><select class="pe-role inp">${rl.map(([k, l]) => `<option value="${k}" ${p.role === k ? "selected" : ""}>${l}</option>`).join("")}</select><button type="button" onclick="this.parentElement.remove()" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark"></i></button></div>`;
+      }
+      let teamCtx = null;
+      function openTeamForm(cid, tid, ctx) {
+        const c = comp(cid);
+        if (!c || !isOpen(c)) return;
+        const t = tid ? tOf(c, tid) : null;
+        if (!t && c.teams.length >= c.size) { toast(`Slot bagan penuh (${c.size} tim). Buat kompetisi baru bila perlu lebih banyak tim.`, "err"); return; }
+        teamCtx = ctx || null;
+        const sp = SPORTS[c.sport];
+        const f = t ? t.formation : sp.formations[0];
+        const players = t ? t.players : defaultRoles(c.sport, f, sp.players + 2).map((role, i) => ({ no: i + 1, name: "", role }));
+        showModal(`${mHead(t ? "Edit Tim" : "Tambah Tim", esc(c.name) + " · " + sp.label)}<div class="px-6 py-5 space-y-4">
+          <div class="grid grid-cols-[1fr_72px] gap-3"><div><label class="lbl">Nama tim / regu</label><input id="tf-name" class="inp" placeholder="mis. PMII, HMI, BEM FT" value="${esc(t ? t.name : "")}" /></div><div><label class="lbl">Warna</label><input id="tf-color" type="color" class="inp !p-1 !h-[38px]" value="${safeColor(t ? t.color : "#10b981")}" /></div></div>
+          <div><label class="lbl">Formasi</label><select id="tf-form" class="inp" onchange="updateHint('${c.id}')">${sp.formations.map((x) => `<option ${x === f ? "selected" : ""}>${x}</option>`).join("")}</select><p id="tf-hint" class="text-xs text-slate-500 mt-1.5">${needsText(c.sport, f)}</p></div>
+          <div><div class="flex items-center justify-between mb-2"><label class="lbl !mb-0">Anggota &amp; peran</label><div class="flex gap-3 text-xs font-bold"><button type="button" class="text-emerald-700" onclick="autoRoles('${c.id}')">Peran otomatis</button><button type="button" class="text-emerald-700" onclick="addPlayerRow('${c.id}')">+ Pemain</button></div></div>
+            <div id="tf-rows" class="space-y-2 max-h-[40vh] overflow-y-auto pr-1">${players.map((p) => playerRowHTML(c.sport, p)).join("")}</div></div>
+          <p id="tf-err" class="text-xs text-red-600 font-semibold h-4"></p>
+          <button class="btn btn-p w-full !py-3" onclick="saveTeam('${c.id}','${t ? t.id : ""}')">Simpan Tim</button></div>`, true);
+      }
+      function updateHint(cid) { const c = comp(cid); $("#tf-hint").textContent = needsText(c.sport, $("#tf-form").value); }
+      function addPlayerRow(cid) {
+        const c = comp(cid), n = document.querySelectorAll("#tf-rows .pe").length;
+        $("#tf-rows").insertAdjacentHTML("beforeend", playerRowHTML(c.sport, { no: n + 1, name: "", role: "CAD" }));
+      }
+      function autoRoles(cid) {
+        const c = comp(cid), rows = document.querySelectorAll("#tf-rows .pe");
+        const rs = defaultRoles(c.sport, $("#tf-form").value, rows.length);
+        rows.forEach((r, i) => { r.querySelector(".pe-role").value = rs[i]; });
+      }
+      function saveTeam(cid, tid) {
+        const c = comp(cid);
+        if (!c || !isOpen(c)) return;
+        const err = (m) => { $("#tf-err").textContent = m; };
+        const name = $("#tf-name").value.trim();
+        if (!name) return err("Nama tim wajib diisi.");
+        if (c.teams.some((x) => x.id !== tid && x.name.toLowerCase() === name.toLowerCase())) return err("Nama tim sudah dipakai di kompetisi ini.");
+        const players = [...document.querySelectorAll("#tf-rows .pe")].map((r) => ({
+          no: r.querySelector(".pe-no").value.trim(), name: r.querySelector(".pe-name").value.trim(), role: r.querySelector(".pe-role").value,
+        })).filter((p) => p.name);
+        const data = { name, color: $("#tf-color").value, formation: $("#tf-form").value, players };
+        let team;
+        if (tid) { team = tOf(c, tid); Object.assign(team, data); }
+        else { team = { id: uid(), ...data }; c.teams.push(team); }
+        let reopen = null;
+        if (teamCtx && !tid) {
+          const m = mOf(c, teamCtx.mid);
+          if (m && m.round === 1 && m.status === "pending" && !m[teamCtx.slot]) { m[teamCtx.slot] = team.id; reopen = m.id; }
+        }
+        teamCtx = null; save(); closeModal(); render();
+        toast(tid ? "Tim diperbarui" : "Tim ditambahkan");
+        if (reopen) openMatch(c.id, reopen);
+      }
+      function deleteTeam(cid, tid) {
+        const c = comp(cid), t = c && tOf(c, tid);
+        if (!t || !isOpen(c)) return;
+        if (c.matches.some((m) => (m.a === tid || m.b === tid) && (m.status === "live" || m.status === "done"))) { toast("Tim sudah bertanding, tidak dapat dihapus.", "err"); return; }
+        if (!confirm(`Hapus tim "${t.name}"?`)) return;
+        c.matches.forEach((m) => { if (m.round === 1) { if (m.a === tid) m.a = null; if (m.b === tid) m.b = null; } });
+        c.teams = c.teams.filter((x) => x.id !== tid); save(); closeModal(); render(); toast("Tim dihapus");
+      }
+      function shuffleFill(cid) {
+        const c = comp(cid);
+        if (!c || !isOpen(c)) return;
+        const un = c.teams.filter((t) => !placed(c, t.id)).sort(() => Math.random() - 0.5);
+        const slots = [];
+        c.matches.filter((m) => m.round === 1 && m.status === "pending").forEach((m) => { if (!m.a) slots.push([m, "a"]); if (!m.b) slots.push([m, "b"]); });
+        slots.sort(() => Math.random() - 0.5);
+        let n = 0;
+        while (un.length && slots.length) { const t = un.pop(), [m, s] = slots.pop(); m[s] = t.id; n++; }
+        save(); render(); toast(n ? n + " tim ditempatkan secara acak" : "Tidak ada yang dapat ditempatkan");
+      }
+
+      /* ============================================================
+         PERTANDINGAN: LIHAT & EDIT
+         ============================================================ */
+      function openMatch(cid, mid) {
+        const c = comp(cid), m = c && mOf(c, mid);
+        if (!m) return;
+        const sp = SPORTS[c.sport], open = isOpen(c);
+        const ta = tOf(c, m.a), tb = tOf(c, m.b);
+        const pickable = open && m.round === 1 && m.status === "pending";
+        const side = (t, slot) => {
+          let h = '<div class="flex-1 min-w-0 text-center">';
+          if (t) h += `<button onclick="openTeam('${c.id}','${t.id}')" class="group block mx-auto">${avatar(t, 52)}<div class="mt-2 font-extrabold text-sm group-hover:text-emerald-700 break-words">${esc(t.name)}</div><div class="text-[11px] text-slate-400">Lihat susunan tim</div></button>`;
+          else h += `<div class="w-[52px] h-[52px] mx-auto rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-300"><i class="fa-solid fa-question"></i></div><div class="mt-2 text-xs italic text-slate-400">${m.round === 1 ? "Slot kosong" : "Menunggu pemenang"}</div>`;
+          if (pickable) {
+            const opts = c.teams.filter((x) => x.id === m[slot] || !placed(c, x.id));
+            h += `<select class="inp mt-2 !text-xs" onchange="pickTeam('${c.id}','${m.id}','${slot}',this.value)"><option value="">— ${t ? "Kosongkan slot" : "Pilih tim"} —</option>${opts.map((x) => `<option value="${x.id}" ${x.id === m[slot] ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select><button class="text-[11px] font-semibold text-emerald-700 mt-1.5" onclick="openTeamForm('${c.id}',null,{mid:'${m.id}',slot:'${slot}'})">+ Tambah tim baru</button>`;
+          }
+          return h + "</div>";
+        };
+        let mid;
+        if (m.status === "pending") mid = '<div class="text-xl font-extrabold text-slate-300 px-2">VS</div>';
+        else if (m.bye) mid = '<div class="text-sm font-extrabold text-amber-600 px-2">BYE</div>';
+        else {
+          const ctl = (k) => (open && m.status === "live")
+            ? `<button class="sbtn" onclick="adj('${c.id}','${m.id}','${k}',1)"><i class="fa-solid fa-plus"></i></button><div class="text-4xl font-extrabold tabular-nums">${m[k] ?? 0}</div><button class="sbtn" onclick="adj('${c.id}','${m.id}','${k}',-1)"><i class="fa-solid fa-minus"></i></button>`
+            : `<div class="text-4xl font-extrabold tabular-nums">${m[k] ?? 0}</div>`;
+          mid = `<div class="flex items-center gap-3"><div class="flex flex-col items-center gap-1">${ctl("sa")}</div><div class="text-2xl font-bold text-slate-300">:</div><div class="flex flex-col items-center gap-1">${ctl("sb")}</div></div>`;
+        }
+        let pen = "";
+        if (!m.bye && c.sport !== "voli" && m.sa != null && m.sa === m.sb && (m.status === "live" || m.status === "done")) {
+          if (m.status === "live" && open) {
+            const pc = (k) => `<div class="flex flex-col items-center gap-1"><button class="sbtn" onclick="adj('${c.id}','${m.id}','${k}',1)"><i class="fa-solid fa-plus"></i></button><div class="text-2xl font-extrabold tabular-nums">${m[k] ?? 0}</div><button class="sbtn" onclick="adj('${c.id}','${m.id}','${k}',-1)"><i class="fa-solid fa-minus"></i></button></div>`;
+            pen = `<div class="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-center"><div class="text-[11px] font-bold uppercase tracking-wider text-amber-700 mb-2">Skor seri · Adu Penalti</div><div class="flex items-center justify-center gap-5">${pc("pa")}<span class="text-slate-300 font-bold">:</span>${pc("pb")}</div></div>`;
+          } else if (m.pa != null) pen = `<div class="mt-3 text-center text-xs font-semibold text-amber-700">Adu penalti: ${m.pa} - ${m.pb}</div>`;
+        }
+        const badge = m.status === "live" ? '<span class="text-red-600 font-extrabold"><i class="fa-solid fa-circle text-[7px] animate-pulse mr-1"></i>LIVE</span>' : m.status === "done" ? '<span class="text-emerald-700 font-bold">Selesai</span>' : '<span class="text-slate-500 font-bold">Belum dimulai</span>';
+
+        const editInfo = open && m.status !== "done";
+        let info = "";
+        if (editInfo) info = `<div class="grid sm:grid-cols-2 gap-3 mt-5"><div><label class="lbl">Waktu</label><input type="datetime-local" class="inp" value="${esc(m.time || "")}" onchange="setField('${c.id}','${m.id}','time',this.value)" /></div><div><label class="lbl">Tempat</label><input class="inp" placeholder="mis. Lapangan Utama" value="${esc(m.venue || "")}" onchange="setField('${c.id}','${m.id}','venue',this.value)" /></div><div class="sm:col-span-2"><label class="lbl">Catatan</label><input class="inp" placeholder="opsional" value="${esc(m.note || "")}" onchange="setField('${c.id}','${m.id}','note',this.value)" /></div></div>`;
+        else if (m.time || m.venue || m.note) info = `<div class="mt-5 text-xs text-slate-600 space-y-1">${m.time ? `<div><i class="fa-regular fa-calendar w-4"></i> ${esc(fmtDate(m.time))}</div>` : ""}${m.venue ? `<div><i class="fa-solid fa-location-dot w-4"></i> ${esc(m.venue)}</div>` : ""}${m.note ? `<div><i class="fa-regular fa-note-sticky w-4"></i> ${esc(m.note)}</div>` : ""}</div>`;
+
+        let actions = "";
+        if (open) {
+          if (m.status === "pending") {
+            const both = m.a && m.b, one = (m.a || m.b) && !(m.a && m.b);
+            actions = `<div class="flex flex-wrap gap-2 mt-5"><button class="btn btn-p flex-1" ${both ? "" : "disabled"} onclick="startMatch('${c.id}','${m.id}')"><i class="fa-solid fa-play"></i>Mulai Pertandingan</button>${m.round === 1 && one ? `<button class="btn btn-g" onclick="setBye('${c.id}','${m.id}')" title="Tim lolos otomatis ke babak berikutnya">Jadikan BYE</button>` : ""}</div>${both ? "" : '<p class="text-[11px] text-slate-400 mt-2">Kedua tim harus terisi sebelum pertandingan dimulai.</p>'}`;
+          } else if (m.status === "live") {
+            actions = `<div class="flex flex-wrap gap-2 mt-5"><button class="btn btn-p flex-1" onclick="endMatch('${c.id}','${m.id}')"><i class="fa-solid fa-flag-checkered"></i>Akhiri Pertandingan</button><button class="btn btn-g" onclick="cancelLive('${c.id}','${m.id}')">Batalkan</button></div>`;
+          } else {
+            actions = canReopen(c, m)
+              ? `<div class="mt-5"><button class="btn btn-g w-full" onclick="reopen('${c.id}','${m.id}')"><i class="fa-solid fa-rotate-left"></i>Koreksi Hasil</button></div>`
+              : `<p class="text-[11px] text-slate-400 mt-4">Hasil tidak dapat dikoreksi karena babak berikutnya sudah dimulai.</p>`;
+          }
+        } else {
+          actions = `<div class="mt-5 p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs text-slate-500"><span><i class="fa-solid fa-lock mr-1"></i>Hanya penyelenggara yang dapat mengubah pertandingan ini.</span><button class="btn btn-p !py-1.5 !px-3 whitespace-nowrap" onclick="openKeyModal('${c.id}',()=>openMatch('${c.id}','${m.id}'))">Buka Kunci</button></div>`;
+        }
+
+        showModal(`${mHead(`${roundName(R(c), m.round)} · M${m.no}`, esc(c.name) + " · " + sp.label + " · " + badge)}<div class="px-6 py-5">
+          <div class="flex items-start justify-between gap-2">${side(ta, "a")}<div class="pt-3">${mid}${m.status !== "pending" && !m.bye ? `<div class="text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-1">${sp.unit}</div>` : ""}</div>${side(tb, "b")}</div>
+          ${pen}${info}${actions}</div>`);
+      }
+
+      function mGuard(cid, mid) {
+        const c = comp(cid), m = c && mOf(c, mid);
+        if (!m || !isOpen(c)) { toast("Buka kunci penyelenggara terlebih dahulu", "err"); return null; }
+        return { c, m };
+      }
+      function pickTeam(cid, mid, slot, val) {
+        const g = mGuard(cid, mid); if (!g) return;
+        const { c, m } = g;
+        if (m.round !== 1 || m.status !== "pending") return;
+        if (val && val !== m[slot] && placed(c, val)) { toast("Tim tersebut sudah berada di slot lain", "err"); openMatch(cid, mid); return; }
+        m[slot] = val || null; save(); render(); openMatch(cid, mid);
+      }
+      function setField(cid, mid, k, v) { const g = mGuard(cid, mid); if (!g) return; g.m[k] = v; save(); render(); }
+      function startMatch(cid, mid) {
+        const g = mGuard(cid, mid); if (!g) return;
+        const { m } = g;
+        if (!m.a || !m.b) { toast("Kedua tim harus terisi", "err"); return; }
+        m.status = "live"; m.sa = 0; m.sb = 0; m.pa = null; m.pb = null;
+        save(); render(); openMatch(cid, mid); toast("Pertandingan dimulai!");
+      }
+      function adj(cid, mid, k, d) {
+        const g = mGuard(cid, mid); if (!g) return;
+        const { m } = g;
+        if (m.status !== "live") return;
+        if (k === "pa" || k === "pb") { if (m.pa == null) m.pa = 0; if (m.pb == null) m.pb = 0; }
+        m[k] = Math.max(0, (m[k] || 0) + d);
+        save(); render(); openMatch(cid, mid);
+      }
+      function endMatch(cid, mid) {
+        const g = mGuard(cid, mid); if (!g) return;
+        const { c, m } = g;
+        if (m.status !== "live") return;
+        if (m.sa === m.sb) {
+          if (c.sport === "voli") { toast("Skor voli tidak boleh seri", "err"); return; }
+          if (m.pa == null || m.pb == null || m.pa === m.pb) { toast("Skor seri: isi hasil adu penalti (tidak boleh sama)", "err"); return; }
+        }
+        if (!confirm("Akhiri pertandingan dan tetapkan pemenang?")) return;
+        finishMatch(c, m); save(); render(); openMatch(cid, mid);
+        toast(c.champion && m.round === R(c) ? "🏆 Juara: " + tOf(c, c.champion).name : "Pertandingan selesai. Pemenang maju ke babak berikutnya.");
+      }
+      function cancelLive(cid, mid) {
+        const g = mGuard(cid, mid); if (!g) return;
+        if (!confirm("Batalkan pertandingan yang sedang berlangsung? Skor akan direset.")) return;
+        Object.assign(g.m, { status: "pending", sa: null, sb: null, pa: null, pb: null });
+        save(); render(); openMatch(cid, mid);
+      }
+      function setBye(cid, mid) {
+        const g = mGuard(cid, mid); if (!g) return;
+        const { c, m } = g;
+        if (!(m.a || m.b) || (m.a && m.b)) return;
+        if (!confirm("Jadikan BYE? Tim yang ada akan lolos otomatis ke babak berikutnya.")) return;
+        m.bye = true; finishMatch(c, m); save(); render(); openMatch(cid, mid);
+      }
+      function reopen(cid, mid) {
+        const g = mGuard(cid, mid); if (!g) return;
+        const { c, m } = g;
+        if (!canReopen(c, m)) { toast("Babak berikutnya sudah dimulai", "err"); return; }
+        reopenMatch(c, m); save(); render(); openMatch(cid, mid);
+      }
+
+      /* ============================================================
+         EKSPOR / IMPOR / DATA CONTOH
+         ============================================================ */
+      function exportData() {
+        const blob = new Blob([JSON.stringify(db, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "minisoccer-unwahas-" + new Date().toISOString().slice(0, 10) + ".json";
+        a.click(); URL.revokeObjectURL(a.href);
+      }
+      function importData(input) {
+        const f = input.files[0]; if (!f) return;
+        const rd = new FileReader();
+        rd.onload = () => {
+          try {
+            const d = JSON.parse(rd.result);
+            if (!d || !Array.isArray(d.competitions)) throw new Error("format");
+            d.competitions.forEach((c) => {
+              if (!c.id || !c.matches || !c.teams || !c.size) return;
+              const i = db.competitions.findIndex((x) => x.id === c.id);
+              if (i >= 0) db.competitions[i] = c; else db.competitions.push(c);
+            });
+            save(); render(); toast("Data berhasil diimpor");
+          } catch (e) { toast("File tidak valid", "err"); }
+          input.value = "";
+        };
+        rd.readAsText(f);
+      }
+      function seedDemo() {
+        const names = ["Rizky", "Fajar", "Dimas", "Agus", "Bagas", "Hafiz", "Yusuf", "Ilham", "Arif", "Naufal", "Reza", "Satria", "Galih", "Andika", "Fikri", "Zaki"];
+        const colors = ["#ef4444", "#f59e0b", "#3b82f6", "#8b5cf6", "#ec4899", "#14b8a6", "#84cc16", "#f97316"];
+        const mk = (c, name, i) => {
+          const sp = SPORTS[c.sport], f = sp.formations[0];
+          const roles = defaultRoles(c.sport, f, sp.players + 2);
+          const t = { id: uid(), name, color: colors[i % colors.length], formation: f, players: roles.map((role, k) => ({ no: k + 1, name: names[(k + i * 3) % names.length], role })) };
+          c.teams.push(t); return t;
+        };
+        const c1 = newComp({ name: "Piala Rektor Futsal 2026", sport: "futsal", size: 8, key: "1234", organizer: "BEM UNWAHAS" });
+        ["PMII", "HMI", "BEM FT", "BEM FEB", "HMJ Informatika", "IPNU", "KAMMI", "BEM FH"].forEach((n, i) => mk(c1, n, i));
+        const r1 = c1.matches.filter((m) => m.round === 1);
+        r1.forEach((m, i) => { m.a = c1.teams[i * 2].id; m.b = c1.teams[i * 2 + 1].id; m.venue = "Lapangan Utama UNWAHAS"; });
+        const play = (m, sa, sb, pa, pb, ago) => { m.sa = sa; m.sb = sb; m.pa = pa ?? null; m.pb = pb ?? null; finishMatch(c1, m); m.finishedAt = Date.now() - ago * 3600e3; };
+        play(r1[0], 3, 1, null, null, 30); play(r1[1], 2, 2, 4, 3, 28); play(r1[2], 1, 0, null, null, 26);
+        Object.assign(r1[3], { status: "live", sa: 1, sb: 1 });
+        const c2 = newComp({ name: "Turnamen Voli Antar Fakultas", sport: "voli", size: 4, key: "1234", organizer: "UKM Voli" });
+        ["BEM FT", "BEM FEB", "HMI", "PMII"].slice(0, 2).forEach((n, i) => mk(c2, n, i + 2));
+        const q = c2.matches.filter((m) => m.round === 1);
+        q[0].a = c2.teams[0].id; q[0].b = c2.teams[1].id;
+        db.competitions.push(c1, c2); save(); render();
+        toast("Data contoh dimuat. Kunci demo: 1234");
+      }
+
+      /* ============================================================
+         ROUTER
+         ============================================================ */
+      function render() {
+        const parts = (location.hash || "#/").slice(2).split("/");
+        $("#nav-home").classList.toggle("active", !parts[0]);
+        $("#nav-hist").classList.toggle("active", parts[0] === "riwayat");
+        if (parts[0] === "k" && parts[1]) renderComp(parts[1]);
+        else if (parts[0] === "riwayat") renderHistory();
+        else renderHome();
+      }
+      window.addEventListener("hashchange", () => { ui.tab = "bagan"; closeModal(); render(); window.scrollTo(0, 0); });
+      window.addEventListener("storage", (e) => { if (e.key === LS) { load(); render(); } });
+      load();
+      render();
     </script>
   </body>
 </html>

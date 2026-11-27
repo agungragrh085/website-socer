@@ -33,16 +33,15 @@
       .modal { display: none; }
       .modal.active { display: flex; }
 
-      /* LATAR LAPANGAN SEPERTI GAMBAR 1 */
+      /* LATAR LAPANGAN & PEMAIN */
       .pitch-container {
         position: relative; width: 100%; max-width: 500px; aspect-ratio: 2/3;
-        background-image: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'); /* Gambar lapangan hijau real */
+        background-image: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');
         background-size: cover; background-position: center; border-radius: 8px;
         border: 2px solid #1b5e20; overflow: hidden; margin: 0 auto;
         box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       }
       
-      /* Desain Pemain */
       .player-dot {
         position: absolute; width: 40px; height: 40px; border-radius: 50%;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -58,7 +57,6 @@
       .player-dot.team-a { border-color: #10b981; }
       .player-dot.team-b { border-color: #3b82f6; }
 
-      /* Avatar & Label Pemain */
       .player-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: #fff; margin-bottom: 1px; }
       .player-label {
         position: absolute; top: 44px; white-space: nowrap; font-size: 9px;
@@ -69,7 +67,6 @@
       }
       .player-rating { color: #fbbf24; font-weight: bold; font-size: 9px; margin-bottom: 1px; }
 
-      /* Tombol Hapus (X) di Admin */
       .delete-btn {
         position: absolute; top: -5px; right: -5px; background: #ef4444; color: white;
         border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;
@@ -77,6 +74,51 @@
         display: none;
       }
       body.is-admin .delete-btn { display: flex; }
+
+      /* ==== STYLE KHUSUS UNTUK BAGAN YANG BISA DIGESER & RESIZE ==== */
+      #custom-bracket-area {
+        position: relative; width: 100%; min-height: 600px; /* Area luas untuk geser */
+        background-color: rgba(15, 23, 42, 0.5); /* Sedikit gelap agar batas area terlihat */
+        border: 2px dashed #334155; border-radius: 8px; overflow: hidden;
+      }
+      
+      .bracket-node {
+        position: absolute; /* Agar bebas dipindah */
+        width: 200px; /* Ukuran default */
+        min-width: 120px; min-height: 80px;
+        background-color: #0f172a; border: 1px solid #475569;
+        border-radius: 6px; padding: 10px;
+        display: flex; flex-direction: column; justify-content: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        resize: both; overflow: auto; /* Fitur Resize bawaan CSS */
+        cursor: move; /* Kursor pindah */
+      }
+
+      /* Gagang Resize di pojok kanan bawah */
+      .bracket-node::-webkit-resizer {
+        background-color: #fbbf24; border-radius: 4px;
+      }
+
+      /* Style Input di dalam Bagan */
+      .bracket-input-title {
+        background: transparent; border: none; border-bottom: 1px dashed #475569;
+        color: #fbbf24; text-align: center; font-size: 10px; font-weight: bold;
+        text-transform: uppercase; width: 100%; outline: none; margin-bottom: 8px;
+      }
+      .bracket-input-team {
+        background: transparent; border: none; color: white; font-weight: bold;
+        font-size: 12px; width: 100%; outline: none;
+      }
+      .bracket-input-score {
+        background: #1e293b; border: 1px solid #334155; color: #fbbf24;
+        text-align: center; font-weight: bold; font-size: 12px; width: 40px;
+        border-radius: 4px; outline: none;
+      }
+      
+      /* Sembunyikan input border saat tidak diedit */
+      .bracket-input-title:focus, .bracket-input-team:focus, .bracket-input-score:focus {
+        border-bottom: 1px solid #fbbf24;
+      }
     </style>
   </head>
   <body class="min-h-screen flex flex-col">
@@ -142,9 +184,9 @@
       </div>
     </main>
 
-    <!-- ================= HALAMAN 2: BAGAN PERTANDINGAN (FULL CUSTOM) ================= -->
-    <main id="page-bracket" class="hide flex-grow bg-stadium pt-8 px-4">
-      <div class="max-w-6xl mx-auto">
+    <!-- ================= HALAMAN 2: BAGAN PERTANDINGAN (FULL CUSTOM GESER) ================= -->
+    <main id="page-bracket" class="hide flex-grow bg-stadium pt-8 px-4 pb-10">
+      <div class="max-w-7xl mx-auto">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-amber-500 flex items-center gap-2"><i class="fa-solid fa-sitemap"></i> Bagan Turnamen</h2>
             <!-- Tombol Tambah Bagan (Hanya Admin) -->
@@ -153,15 +195,17 @@
             </button>
         </div>
         
-        <div class="bg-[#1e293b]/95 backdrop-blur-md rounded-xl p-8 overflow-x-auto shadow-2xl border border-gray-700 min-h-[500px]">
+        <!-- AREA KANVAS BAGAN -->
+        <div class="bg-[#1e293b]/95 backdrop-blur-md rounded-xl p-4 sm:p-8 shadow-2xl border border-gray-700 overflow-auto">
+          
+          <p class="text-xs text-gray-400 mb-4 hidden" id="bracket-hint"><i class="fa-solid fa-info-circle text-amber-500"></i> Mode Admin: Geser kotak untuk memindah, tarik pojok kanan bawah untuk memperbesar/mengecilkan, dan ketik langsung di dalam kotak untuk mengubah teks.</p>
           
           <!-- WADAH BAGAN CUSTOM (Diisi oleh JS) -->
-          <div id="custom-bracket-area" class="flex gap-12 min-w-max">
+          <div id="custom-bracket-area" class="relative w-full h-[600px]">
              <!-- Node akan dirender di sini -->
           </div>
           
         </div>
-        <p class="text-center text-xs text-gray-400 mt-4">*Bagan ini dapat diatur sepenuhnya oleh Admin.</p>
       </div>
     </main>
 
@@ -382,35 +426,24 @@
             ]
           };
         } else {
-          // FORMASI SEPAKBOLA: Tim A (4-1-2-3), Tim B (4-4-2)
           return {
             A: [
-              // Kiper
               {name: '23 L. Simón', x: 50, y: 92, rating: '6.5'},
-              // Bek (4)
               {name: '12 P. Porro', x: 15, y: 75, rating: '6.6'}, {name: '22 P. Cubarsí', x: 38, y: 75, rating: '6.8'}, {name: '14 A. Laporte', x: 62, y: 75, rating: '6.6'}, {name: '24 M. Cucurella', x: 85, y: 75, rating: '6.7'},
-              // Gelandang Bertahan (1)
               {name: '16 Rodri', x: 50, y: 60, rating: '6.6'},
-              // Gelandang Serang (2)
               {name: '10 D. Olmo', x: 30, y: 45, rating: '6.9'}, {name: '8 F. Ruiz', x: 70, y: 45, rating: '6.9'},
-              // Penyerang (3)
               {name: '19 L. Yamal', x: 15, y: 25, rating: '6.9'}, {name: '21 M. Oyarzabal', x: 50, y: 25, rating: '6.9'}, {name: '15 A. Baena', x: 85, y: 25, rating: '6.9'}
             ],
             B: [
-              // Kiper
               {name: '23 E. Martínez', x: 50, y: 8, rating: '7.0'},
-              // Bek (4)
               {name: '3 N. Tagliafico', x: 15, y: 25, rating: '6.5'}, {name: '8 L. Martínez', x: 38, y: 25, rating: '6.5'}, {name: '13 C. Romero', x: 62, y: 25, rating: '6.5'}, {name: '4 G. Montiel', x: 85, y: 25, rating: '6.5'},
-              // Gelandang (4)
               {name: '15 N. González', x: 15, y: 45, rating: '6.5'}, {name: '20 A. Mac Allister', x: 38, y: 45, rating: '6.5'}, {name: '24 E. Fernández', x: 62, y: 45, rating: '6.5'}, {name: '7 R. De Paul', x: 85, y: 45, rating: '6.5'},
-              // Penyerang (2)
               {name: '9 J. Álvarez', x: 35, y: 65, rating: '6.5'}, {name: '10 L. Messi', x: 65, y: 65, rating: '6.5'}
             ]
           };
         }
       }
 
-      // Data default dengan 1 pertandingan
       const defaultMatches = {
         'm_default': { 
           competition: 'Final Piala Dunia', scheduleStart: '2024-11-20T20:00', scheduleEnd: '2024-11-20T22:00', 
@@ -421,15 +454,24 @@
         }
       };
 
-      // Bagan Custom (Disimpan terpisah)
+      // === DEFAULT BRACKET (DENGAN KOORDINAT X, Y, WIDTH, HEIGHT) ===
       const defaultBracket = [
-        { id: 'b1', title: 'Semifinal 1', teamA: 'Spanyol', scoreA: 2, teamB: 'Prancis', scoreB: 1 },
-        { id: 'b2', title: 'Semifinal 2', teamA: 'Argentina', scoreA: 3, teamB: 'Inggris', scoreB: 0 },
-        { id: 'b3', title: 'Final', teamA: 'Spanyol', scoreA: 1, teamB: 'Argentina', scoreB: 0 }
+        { 
+          id: 'b1', title: 'Semifinal 1', teamA: 'Spanyol', scoreA: 2, teamB: 'Prancis', scoreB: 1,
+          x: 50, y: 100, w: 200, h: 100 // Posisi & Ukuran
+        },
+        { 
+          id: 'b2', title: 'Semifinal 2', teamA: 'Argentina', scoreA: 3, teamB: 'Inggris', scoreB: 0,
+          x: 50, y: 300, w: 200, h: 100 
+        },
+        { 
+          id: 'b3', title: 'Final', teamA: 'Spanyol', scoreA: 1, teamB: 'Argentina', scoreB: 0,
+          x: 400, y: 200, w: 220, h: 110 
+        }
       ];
 
-      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_v7')) || defaultMatches;
-      let bracketData = JSON.parse(localStorage.getItem('unwahas_bracket_v7')) || defaultBracket;
+      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_bracket_v1')) || defaultMatches;
+      let bracketData = JSON.parse(localStorage.getItem('unwahas_bracket_bracket_v1')) || defaultBracket;
       
       let isAdmin = false;
       let currentMatchId = null;
@@ -437,88 +479,87 @@
       let tempFormation = { A: [], B: [] };
       let draggedPlayer = null;
 
+      // State untuk Drag Bagan
+      let draggedBracketNode = null;
+      let dragOffsetX = 0;
+      let dragOffsetY = 0;
+
       function saveToStorage() {
-        localStorage.setItem('unwahas_matches_v7', JSON.stringify(matchesData));
-        localStorage.setItem('unwahas_bracket_v7', JSON.stringify(bracketData));
+        localStorage.setItem('unwahas_matches_bracket_v1', JSON.stringify(matchesData));
+        localStorage.setItem('unwahas_bracket_bracket_v1', JSON.stringify(bracketData));
       }
 
+      // ... (Fungsi navigasi, getAutoStatus, formatTime, formatDate tetap sama) ...
       function getAutoStatus(match) {
-        const now = new Date();
-        const start = new Date(match.scheduleStart);
-        const end = new Date(match.scheduleEnd);
-        if (now >= start && now <= end) return 'live';
-        if (now > end) return 'finished';
-        return 'upcoming';
+        const now = new Date(); const start = new Date(match.scheduleStart); const end = new Date(match.scheduleEnd);
+        if (now >= start && now <= end) return 'live'; if (now > end) return 'finished'; return 'upcoming';
       }
+      function formatTime(dateStr) { if(!dateStr) return '--:--'; const d = new Date(dateStr); return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':'); }
+      function formatDate(dateStr) { if(!dateStr) return ''; const d = new Date(dateStr); return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }); }
 
-      function formatTime(dateStr) {
-        if(!dateStr) return '--:--';
-        const d = new Date(dateStr);
-        return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
-      }
-
-      function formatDate(dateStr) {
-        if(!dateStr) return '';
-        const d = new Date(dateStr);
-        return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
-      }
-
-      // === NAVIGASI HALAMAN ===
       function switchPage(page) {
-        ['landing', 'bracket', 'history', 'user', 'admin'].forEach(p => {
-          document.getElementById(`page-${p}`).classList.add('hide');
-        });
-        
-        ['live', 'sepakbola', 'futsal', 'bracket', 'history'].forEach(t => {
-          document.getElementById(`nav-${t}`).classList.remove('active');
-        });
+        ['landing', 'bracket', 'history', 'user', 'admin'].forEach(p => document.getElementById(`page-${p}`).classList.add('hide'));
+        ['live', 'sepakbola', 'futsal', 'bracket', 'history'].forEach(t => document.getElementById(`nav-${t}`).classList.remove('active'));
 
-        if (page === 'landing') {
-          document.getElementById('page-landing').classList.remove('hide');
-          document.getElementById('nav-live').classList.add('active');
-          renderLanding();
-        } else if (page === 'bracket') {
-          document.getElementById('page-bracket').classList.remove('hide');
-          document.getElementById('nav-bracket').classList.add('active');
-          renderBracket();
-        } else if (page === 'history') {
-          document.getElementById('page-history').classList.remove('hide');
-          document.getElementById('nav-history').classList.add('active');
-          renderHistory();
-        } else if (page === 'user') {
-          document.getElementById('page-user').classList.remove('hide');
-        } else if (page === 'admin') {
-          document.getElementById('page-admin').classList.remove('hide');
-        }
+        if (page === 'landing') { document.getElementById('page-landing').classList.remove('hide'); document.getElementById('nav-live').classList.add('active'); renderLanding(); } 
+        else if (page === 'bracket') { document.getElementById('page-bracket').classList.remove('hide'); document.getElementById('nav-bracket').classList.add('active'); renderBracket(); } 
+        else if (page === 'history') { document.getElementById('page-history').classList.remove('hide'); document.getElementById('nav-history').classList.add('active'); renderHistory(); } 
+        else if (page === 'user') { document.getElementById('page-user').classList.remove('hide'); } 
+        else if (page === 'admin') { document.getElementById('page-admin').classList.remove('hide'); }
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      // === RENDER BAGAN CUSTOM ===
+      // === RENDER BAGAN CUSTOM (BEBAS GESER & RESIZE) ===
       function renderBracket() {
         const container = document.getElementById('custom-bracket-area');
         container.innerHTML = '';
         
-        // Tampilkan tombol tambah jika admin
+        // Tampilkan tombol tambah & hint jika admin
         document.getElementById('btn-add-bracket').classList.toggle('hidden', !isAdmin);
         document.getElementById('btn-add-bracket').classList.toggle('flex', isAdmin);
+        document.getElementById('bracket-hint').classList.toggle('hidden', !isAdmin);
 
-        // Render per kolom (asumsi: Semifinal, Final, dst)
-        // Untuk mempermudah, kita render berurutan
-        bracketData.forEach((node, index) => {
-          let controls = '';
+        bracketData.forEach((node) => {
+          const div = document.createElement('div');
+          div.className = 'bracket-node';
+          
+          // Set Posisi & Ukuran
+          div.style.left = node.x + 'px';
+          div.style.top = node.y + 'px';
+          div.style.width = node.w + 'px';
+          div.style.height = node.h + 'px';
+
           if (isAdmin) {
-            controls = `
-              <div class="absolute -top-3 -right-3 flex gap-1">
-                <button onclick="editBracketNode('${node.id}')" class="bg-amber-500 text-black w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shadow-lg"><i class="fa-solid fa-pen"></i></button>
-                <button onclick="deleteBracketNode('${node.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shadow-lg"><i class="fa-solid fa-xmark"></i></button>
+            // TAMPILAN EDIT (INPUT BOX LANGSUNG)
+            div.innerHTML = `
+              <button onclick="deleteBracketNode('${node.id}')" class="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full text-xs flex items-center justify-center z-50 hover:scale-110 transition"><i class="fa-solid fa-xmark"></i></button>
+              
+              <input type="text" class="bracket-input-title" value="${node.title}" onchange="updateBracketData('${node.id}', 'title', this.value)" placeholder="Nama Babak">
+              
+              <div class="flex justify-between items-center mb-1">
+                <input type="text" class="bracket-input-team" value="${node.teamA}" onchange="updateBracketData('${node.id}', 'teamA', this.value)" placeholder="Tim A">
+                <input type="number" class="bracket-input-score" value="${node.scoreA}" onchange="updateBracketData('${node.id}', 'scoreA', this.value)" placeholder="0">
+              </div>
+              <div class="flex justify-between items-center">
+                <input type="text" class="bracket-input-team" value="${node.teamB}" onchange="updateBracketData('${node.id}', 'teamB', this.value)" placeholder="Tim B">
+                <input type="number" class="bracket-input-score" value="${node.scoreB}" onchange="updateBracketData('${node.id}', 'scoreB', this.value)" placeholder="0">
               </div>
             `;
-          }
 
-          // Tampilan kotak bagan
-          let cardHTML = `
-            <div class="relative bg-[#0f172a] rounded-lg p-3 border border-gray-700 w-48 shadow-lg mb-8">
-              ${controls}
+            // Tambahkan Event Listener untuk Drag (Hanya Admin)
+            div.addEventListener('mousedown', (e) => startDragBracket(e, div, node));
+            div.addEventListener('touchstart', (e) => startDragBracket(e, div, node), {passive: false});
+            
+            // Simpan ukuran setelah di-resize (menggunakan event mouseup pada div)
+            div.addEventListener('mouseup', () => {
+              node.w = div.offsetWidth;
+              node.h = div.offsetHeight;
+              saveToStorage();
+            });
+
+          } else {
+            // TAMPILAN USER (HANYA LIHAT)
+            div.innerHTML = `
               <div class="text-center text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-2 border-b border-gray-700 pb-1">${node.title}</div>
               <div class="flex justify-between items-center pb-1 mb-1 text-sm font-bold border-b border-gray-800">
                 <span>${node.teamA}</span> <span class="text-amber-500">${node.scoreA}</span>
@@ -526,49 +567,81 @@
               <div class="flex justify-between items-center text-sm font-bold">
                 <span>${node.teamB}</span> <span class="text-amber-500">${node.scoreB}</span>
               </div>
-            </div>
-          `;
-          
-          container.innerHTML += cardHTML;
-
-          // Tambahkan garis penghubung jika bukan elemen terakhir
-          if (index < bracketData.length - 1 && index % 2 !== 0) {
-             // Logika garis sederhana (bisa disesuaikan)
+            `;
           }
+          
+          container.appendChild(div);
         });
       }
 
-      // === TAMBAH/EDIT BAGAN (ADMIN) ===
-      function addBracketNode() {
-        const id = 'b_' + Date.now();
-        const title = prompt("Masukkan Nama Babak (Cth: Semifinal 3, Perempat Final):");
-        if (!title) return;
-        
-        bracketData.push({ id: id, title: title, teamA: 'Tim A', scoreA: 0, teamB: 'Tim B', scoreB: 0 });
-        saveToStorage();
-        renderBracket();
+      // === FUNGSI UPDATE DATA BAGAN (DARI INPUT) ===
+      function updateBracketData(id, field, value) {
+        const node = bracketData.find(b => b.id === id);
+        if (node) {
+          node[field] = (field === 'scoreA' || field === 'scoreB') ? parseInt(value) || 0 : value;
+          saveToStorage(); 
+          // Tidak perlu render ulang seluruhnya, biarkan text berubah
+        }
       }
 
-      function editBracketNode(id) {
-        const node = bracketData.find(b => b.id === id);
-        if (!node) return;
+      // === FUNGSI DRAG BAGAN (BEBAS PINDAH) ===
+      function startDragBracket(e, element, node) {
+        // Jangan drag jika yang diklik adalah input atau tombol hapus
+        if(e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return; 
+        
+        e.preventDefault();
+        draggedBracketNode = { element, node };
+        
+        const rect = element.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
 
-        const newTitle = prompt("Nama Babak:", node.title);
-        const newTeamA = prompt("Nama Tim A:", node.teamA);
-        const newScoreA = prompt("Skor Tim A:", node.scoreA);
-        const newTeamB = prompt("Nama Tim B:", node.teamB);
-        const newScoreB = prompt("Skor Tim B:", node.scoreB);
+        function onMove(moveEvent) {
+          if (!draggedBracketNode) return;
+          let clientX, clientY;
+          if (moveEvent.type === 'mousemove') { clientX = moveEvent.clientX; clientY = moveEvent.clientY; } 
+          else { clientX = moveEvent.touches[0].clientX; clientY = moveEvent.touches[0].clientY; }
 
-        if (newTitle && newTeamA && newTeamB) {
-          node.title = newTitle;
-          node.teamA = newTeamA;
-          node.scoreA = parseInt(newScoreA) || 0;
-          node.teamB = newTeamB;
-          node.scoreB = parseInt(newScoreB) || 0;
+          // Hitung posisi baru relatif terhadap container
+          const containerRect = document.getElementById('custom-bracket-area').getBoundingClientRect();
+          let newX = clientX - containerRect.left - dragOffsetX;
+          let newY = clientY - containerRect.top - dragOffsetY;
+
+          // Batasi agar tidak keluar area
+          newX = Math.max(0, Math.min(newX, containerRect.width - element.offsetWidth));
+          newY = Math.max(0, Math.min(newY, containerRect.height - element.offsetHeight));
+
+          element.style.left = newX + 'px';
+          element.style.top = newY + 'px';
           
-          saveToStorage();
-          renderBracket();
+          node.x = newX; node.y = newY;
         }
+
+        function onUp() {
+          if(draggedBracketNode) {
+            saveToStorage(); // Simpan posisi baru
+          }
+          draggedBracketNode = null;
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          document.removeEventListener('touchmove', onMove);
+          document.removeEventListener('touchend', onUp);
+        }
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+        document.addEventListener('touchmove', onMove, {passive: false});
+        document.addEventListener('touchend', onUp);
+      }
+
+      function addBracketNode() {
+        const id = 'b_' + Date.now();
+        bracketData.push({ 
+          id: id, title: 'Babak Baru', teamA: 'Tim A', scoreA: 0, teamB: 'Tim B', scoreB: 0,
+          x: 50, y: 50, w: 200, h: 100 // Posisi default
+        });
+        saveToStorage();
+        renderBracket();
       }
 
       function deleteBracketNode(id) {
@@ -579,124 +652,45 @@
         }
       }
 
-      // === RENDER LANDING ===
+      // ... (Fungsi renderLanding, renderHistory, openMatch, renderUserPitch, renderAdminPitch, createPlayerElement, startDrag, addPlayer, removePlayer, openModal, handleLogin, logoutAdmin, saveAdminData, init TETAP SAMA) ...
+
       function renderLanding() {
-        const container = document.getElementById('match-list-container');
-        container.innerHTML = '';
+        const container = document.getElementById('match-list-container'); container.innerHTML = '';
         document.getElementById('add-match-container').classList.toggle('hidden', !isAdmin);
-
         const filteredMatches = Object.keys(matchesData).filter(key => {
-          const m = matchesData[key];
-          const status = getAutoStatus(m);
-          if (status === 'finished') return false; 
-          if (currentCategory === 'live') return true;
-          return m.category === currentCategory;
+          const m = matchesData[key]; const status = getAutoStatus(m);
+          if (status === 'finished') return false; if (currentCategory === 'live') return true; return m.category === currentCategory;
         });
-
-        if (filteredMatches.length === 0) {
-          container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">Tidak ada pertandingan aktif.</div>`;
-          return;
-        }
-
+        if (filteredMatches.length === 0) { container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">Tidak ada pertandingan aktif.</div>`; return; }
         const grouped = {};
         filteredMatches.forEach(key => {
-          const m = matchesData[key];
-          if (!grouped[m.competition]) grouped[m.competition] = { logo: m.compLogo, matches: [] };
+          const m = matchesData[key]; if (!grouped[m.competition]) grouped[m.competition] = { logo: m.compLogo, matches: [] };
           grouped[m.competition].matches.push({ id: key, ...m });
         });
-
         for (const compName in grouped) {
           const group = grouped[compName];
-          let html = `
-            <div class="bg-[#0f172a] px-4 py-2 flex justify-between items-center border-b border-gray-700 border-t mt-1">
-              <div class="flex items-center gap-3 text-sm font-bold text-gray-300">
-                ${group.logo ? `<img src="${group.logo}" class="competition-logo">` : '<i class="fa-solid fa-trophy text-amber-500"></i>'}
-                <span>${compName}</span>
-              </div>
-              <div class="text-xs text-gray-400">1 X 2</div>
-            </div>
-          `;
-
+          let html = `<div class="bg-[#0f172a] px-4 py-2 flex justify-between items-center border-b border-gray-700 border-t mt-1"><div class="flex items-center gap-3 text-sm font-bold text-gray-300">${group.logo ? `<img src="${group.logo}" class="competition-logo">` : '<i class="fa-solid fa-trophy text-amber-500"></i>'}<span>${compName}</span></div><div class="text-xs text-gray-400">1 X 2</div></div>`;
           group.matches.forEach(m => {
-            const status = getAutoStatus(m);
-            const isLive = status === 'live';
-            const timeStart = formatTime(m.scheduleStart);
-            const timeEnd = formatTime(m.scheduleEnd);
-            
-            const logoA = m.logoA || DEFAULT_LOGO;
-            const logoB = m.logoB || DEFAULT_LOGO;
-
-            html += `
-              <div onclick="openMatch('${m.id}')" class="flex items-center justify-between px-3 sm:px-4 py-3 border-b border-gray-700/50 hover:bg-gray-800/50 cursor-pointer transition group">
-                <div class="w-20 sm:w-24 flex items-center gap-2">
-                  ${isLive ? `<span class="live-dot w-2 h-2 bg-red-500 rounded-full"></span><span class="text-xs text-red-400 font-bold">LIVE</span>` : `<span class="text-xs sm:text-sm text-gray-400 font-medium">${timeStart} - ${timeEnd}</span>`}
-                </div>
-                <div class="flex-grow flex items-center justify-end gap-2 sm:gap-3 text-xs sm:text-sm font-semibold">
-                  <span class="truncate max-w-[80px] sm:max-w-none">${m.teamA}</span>
-                  <img src="${logoA}" class="w-5 h-5 sm:w-6 sm:h-6 object-contain">
-                  <span class="text-amber-500 font-bold text-sm sm:text-base mx-1 sm:mx-2">${m.scoreA} - ${m.scoreB}</span>
-                  <img src="${logoB}" class="w-5 h-5 sm:w-6 sm:h-6 object-contain">
-                  <span class="truncate max-w-[80px] sm:max-w-none">${m.teamB}</span>
-                </div>
-                <div class="flex items-center gap-2 sm:gap-3 w-12 sm:w-16 justify-end"><i class="fa-regular fa-star text-gray-500"></i></div>
-              </div>
-            `;
+            const status = getAutoStatus(m); const isLive = status === 'live';
+            const timeStart = formatTime(m.scheduleStart); const timeEnd = formatTime(m.scheduleEnd);
+            const logoA = m.logoA || DEFAULT_LOGO; const logoB = m.logoB || DEFAULT_LOGO;
+            html += `<div onclick="openMatch('${m.id}')" class="flex items-center justify-between px-3 sm:px-4 py-3 border-b border-gray-700/50 hover:bg-gray-800/50 cursor-pointer transition group"><div class="w-20 sm:w-24 flex items-center gap-2">${isLive ? `<span class="live-dot w-2 h-2 bg-red-500 rounded-full"></span><span class="text-xs text-red-400 font-bold">LIVE</span>` : `<span class="text-xs sm:text-sm text-gray-400 font-medium">${timeStart} - ${timeEnd}</span>`}</div><div class="flex-grow flex items-center justify-end gap-2 sm:gap-3 text-xs sm:text-sm font-semibold"><span class="truncate max-w-[80px] sm:max-w-none">${m.teamA}</span><img src="${logoA}" class="w-5 h-5 sm:w-6 sm:h-6 object-contain"><span class="text-amber-500 font-bold text-sm sm:text-base mx-1 sm:mx-2">${m.scoreA} - ${m.scoreB}</span><img src="${logoB}" class="w-5 h-5 sm:w-6 sm:h-6 object-contain"><span class="truncate max-w-[80px] sm:max-w-none">${m.teamB}</span></div><div class="flex items-center gap-2 sm:gap-3 w-12 sm:w-16 justify-end"><i class="fa-regular fa-star text-gray-500"></i></div></div>`;
           });
           container.innerHTML += html;
         }
       }
 
-      // === RENDER HISTORY ===
       function renderHistory() {
-        const container = document.getElementById('history-list-container');
-        container.innerHTML = '';
-
+        const container = document.getElementById('history-list-container'); container.innerHTML = '';
         const finishedMatches = Object.keys(matchesData).filter(key => getAutoStatus(matchesData[key]) === 'finished');
-
-        if (finishedMatches.length === 0) {
-          container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">Belum ada pertandingan yang selesai.</div>`;
-          return;
-        }
-
+        if (finishedMatches.length === 0) { container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">Belum ada pertandingan yang selesai.</div>`; return; }
         finishedMatches.sort((a, b) => new Date(matchesData[b].scheduleEnd) - new Date(matchesData[a].scheduleEnd));
-
-        let tableHTML = `
-          <table class="w-full text-left border-collapse">
-            <thead class="bg-[#0f172a] text-amber-500 text-xs uppercase tracking-wider">
-              <tr>
-                <th class="p-4 border-b border-gray-700">Tanggal</th>
-                <th class="p-4 border-b border-gray-700">Kompetisi</th>
-                <th class="p-4 border-b border-gray-700 text-center">Skor</th>
-                <th class="p-4 border-b border-gray-700">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-800">
-        `;
-
+        let tableHTML = `<table class="w-full text-left border-collapse"><thead class="bg-[#0f172a] text-amber-500 text-xs uppercase tracking-wider"><tr><th class="p-4 border-b border-gray-700">Tanggal</th><th class="p-4 border-b border-gray-700">Kompetisi</th><th class="p-4 border-b border-gray-700 text-center">Skor</th><th class="p-4 border-b border-gray-700">Aksi</th></tr></thead><tbody class="divide-y divide-gray-800">`;
         finishedMatches.forEach(id => {
           const m = matchesData[id];
-          tableHTML += `
-            <tr class="hover:bg-gray-800/30 transition">
-              <td class="p-4 text-xs text-gray-400">${formatDate(m.scheduleEnd)}</td>
-              <td class="p-4 text-sm font-semibold text-gray-200">${m.competition}</td>
-              <td class="p-4 text-center">
-                <div class="flex items-center justify-center gap-2 text-sm font-bold">
-                  <span>${m.teamA}</span>
-                  <img src="${m.logoA || DEFAULT_LOGO}" class="w-4 h-4 object-contain">
-                  <span class="bg-black border border-gray-600 px-2 py-0.5 rounded text-amber-500">${m.scoreA} - ${m.scoreB}</span>
-                  <img src="${m.logoB || DEFAULT_LOGO}" class="w-4 h-4 object-contain">
-                  <span>${m.teamB}</span>
-                </div>
-              </td>
-              <td class="p-4">
-                <button onclick="openMatch('${id}')" class="text-xs text-amber-500 hover:text-white border border-amber-500/50 px-2 py-1 rounded transition">Lihat Detail</button>
-              </td>
-            </tr>
-          `;
+          tableHTML += `<tr class="hover:bg-gray-800/30 transition"><td class="p-4 text-xs text-gray-400">${formatDate(m.scheduleEnd)}</td><td class="p-4 text-sm font-semibold text-gray-200">${m.competition}</td><td class="p-4 text-center"><div class="flex items-center justify-center gap-2 text-sm font-bold"><span>${m.teamA}</span><img src="${m.logoA || DEFAULT_LOGO}" class="w-4 h-4 object-contain"><span class="bg-black border border-gray-600 px-2 py-0.5 rounded text-amber-500">${m.scoreA} - ${m.scoreB}</span><img src="${m.logoB || DEFAULT_LOGO}" class="w-4 h-4 object-contain"><span>${m.teamB}</span></div></td><td class="p-4"><button onclick="openMatch('${id}')" class="text-xs text-amber-500 hover:text-white border border-amber-500/50 px-2 py-1 rounded transition">Lihat Detail</button></td></tr>`;
         });
-
-        tableHTML += `</tbody></table>`;
-        container.innerHTML = tableHTML;
+        tableHTML += `</tbody></table>`; container.innerHTML = tableHTML;
       }
 
       function filterCategory(cat) {
@@ -718,326 +712,104 @@
         switchPage('landing');
       }
 
-      // === TAMBAH PERTANDINGAN ===
       function addNewMatch() {
         const newId = 'm_' + Date.now(); 
-        const now = new Date();
-        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000); 
-
-        const formatISO = (date) => {
-          const pad = (n) => n.toString().padStart(2, '0');
-          return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-        };
-
-        matchesData[newId] = {
-          competition: 'Kompetisi Baru',
-          scheduleStart: formatISO(now),
-          scheduleEnd: formatISO(tomorrow),
-          teamA: 'Tim A', logoA: '', scoreA: 0,
-          teamB: 'Tim B', logoB: '', scoreB: 0,
-          compLogo: '', trophyImg: DEFAULT_TROPHY, category: 'sepakbola',
-          formation: getDefaultFormation('sepakbola') 
-        };
-
-        saveToStorage();
-        openMatch(newId); 
+        const now = new Date(); const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000); 
+        const formatISO = (date) => { const pad = (n) => n.toString().padStart(2, '0'); return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`; };
+        matchesData[newId] = { competition: 'Kompetisi Baru', scheduleStart: formatISO(now), scheduleEnd: formatISO(tomorrow), teamA: 'Tim A', logoA: '', scoreA: 0, teamB: 'Tim B', logoB: '', scoreB: 0, compLogo: '', trophyImg: DEFAULT_TROPHY, category: 'sepakbola', formation: getDefaultFormation('sepakbola') };
+        saveToStorage(); openMatch(newId); 
       }
 
       function deleteCurrentMatch() {
         if (!currentMatchId) return;
         if (confirm('Apakah Anda yakin ingin menghapus pertandingan ini secara permanen?')) {
-          delete matchesData[currentMatchId];
-          saveToStorage();
-          alert('Pertandingan berhasil dihapus!');
-          switchPage('landing');
+          delete matchesData[currentMatchId]; saveToStorage(); alert('Pertandingan berhasil dihapus!'); switchPage('landing');
         }
       }
 
-      // === BUKA MATCH ===
       function openMatch(matchId) {
-        currentMatchId = matchId;
-        const data = matchesData[matchId];
-        const status = getAutoStatus(data);
-        const timeStart = formatTime(data.scheduleStart);
-        const timeEnd = formatTime(data.scheduleEnd);
-        const matchDate = formatDate(data.scheduleStart);
-        const trophySrc = data.trophyImg || DEFAULT_TROPHY;
-
+        currentMatchId = matchId; const data = matchesData[matchId]; const status = getAutoStatus(data);
+        const timeStart = formatTime(data.scheduleStart); const timeEnd = formatTime(data.scheduleEnd); const matchDate = formatDate(data.scheduleStart); const trophySrc = data.trophyImg || DEFAULT_TROPHY;
         if (isAdmin) {
-          document.getElementById('active-match-id').value = matchId;
-          document.getElementById('input-competition').value = data.competition;
-          document.getElementById('input-schedule-start').value = data.scheduleStart || '';
-          document.getElementById('input-schedule-end').value = data.scheduleEnd || '';
-          document.getElementById('input-category').value = data.category;
-          document.getElementById('input-teamA').value = data.teamA;
-          document.getElementById('input-scoreA').value = data.scoreA;
-          document.getElementById('input-teamB').value = data.teamB;
-          document.getElementById('input-scoreB').value = data.scoreB;
-          
-          document.getElementById('input-logoA').value = '';
-          document.getElementById('input-logoB').value = '';
-          document.getElementById('input-comp-logo').value = '';
-          document.getElementById('input-trophy').value = '';
-          
-          if (!data.formation || (data.formation.A.length === 0 && data.formation.B.length === 0)) {
-             tempFormation = getDefaultFormation(data.category);
-          } else {
-             tempFormation = JSON.parse(JSON.stringify(data.formation));
-          }
-          
-          document.getElementById('admin-teamA-label').innerText = data.teamA;
-          document.getElementById('admin-teamB-label').innerText = data.teamB;
-
-          renderAdminPitch();
-          switchPage('admin');
+          document.getElementById('active-match-id').value = matchId; document.getElementById('input-competition').value = data.competition; document.getElementById('input-schedule-start').value = data.scheduleStart || ''; document.getElementById('input-schedule-end').value = data.scheduleEnd || ''; document.getElementById('input-category').value = data.category; document.getElementById('input-teamA').value = data.teamA; document.getElementById('input-scoreA').value = data.scoreA; document.getElementById('input-teamB').value = data.teamB; document.getElementById('input-scoreB').value = data.scoreB;
+          document.getElementById('input-logoA').value = ''; document.getElementById('input-logoB').value = ''; document.getElementById('input-comp-logo').value = ''; document.getElementById('input-trophy').value = '';
+          if (!data.formation || (data.formation.A.length === 0 && data.formation.B.length === 0)) { tempFormation = getDefaultFormation(data.category); } else { tempFormation = JSON.parse(JSON.stringify(data.formation)); }
+          document.getElementById('admin-teamA-label').innerText = data.teamA; document.getElementById('admin-teamB-label').innerText = data.teamB;
+          renderAdminPitch(); switchPage('admin');
         } else {
-          document.getElementById('user-comp-logo').src = data.compLogo || '';
-          document.getElementById('user-competition').innerText = data.competition;
-          document.getElementById('user-date').innerText = matchDate;
-          document.getElementById('user-trophy').src = trophySrc;
-          
-          document.getElementById('user-teamA').innerText = data.teamA;
-          document.getElementById('user-logoA').src = data.logoA || DEFAULT_LOGO;
-          document.getElementById('user-teamA-sm').innerText = data.teamA;
-          document.getElementById('user-logoA-sm').src = data.logoA || DEFAULT_LOGO;
-          
+          document.getElementById('user-comp-logo').src = data.compLogo || ''; document.getElementById('user-competition').innerText = data.competition; document.getElementById('user-date').innerText = matchDate; document.getElementById('user-trophy').src = trophySrc;
+          document.getElementById('user-teamA').innerText = data.teamA; document.getElementById('user-logoA').src = data.logoA || DEFAULT_LOGO; document.getElementById('user-teamA-sm').innerText = data.teamA; document.getElementById('user-logoA-sm').src = data.logoA || DEFAULT_LOGO;
           document.getElementById('user-score').innerText = `${data.scoreA} - ${data.scoreB}`;
-          
-          document.getElementById('user-teamB').innerText = data.teamB;
-          document.getElementById('user-logoB').src = data.logoB || DEFAULT_LOGO;
-          document.getElementById('user-teamB-sm').innerText = data.teamB;
-          document.getElementById('user-logoB-sm').src = data.logoB || DEFAULT_LOGO;
-
-          document.getElementById('user-time-range').innerText = `${timeStart} - ${timeEnd}`;
-          updateStatusDisplay('user-status', status);
-
-          // Set Label Formasi (4-1-2-3 & 4-4-2)
-          if (data.category === 'sepakbola') {
-             document.getElementById('user-formationA').innerText = '4-1-2-3';
-             document.getElementById('user-formationB').innerText = '4-4-2';
-          } else {
-             document.getElementById('user-formationA').innerText = 'Formasi Futsal';
-             document.getElementById('user-formationB').innerText = 'Formasi Futsal';
-          }
-
-          const formData = (data.formation && data.formation.A.length > 0) ? data.formation : getDefaultFormation(data.category);
-          renderUserPitch(formData);
-          switchPage('user');
+          document.getElementById('user-teamB').innerText = data.teamB; document.getElementById('user-logoB').src = data.logoB || DEFAULT_LOGO; document.getElementById('user-teamB-sm').innerText = data.teamB; document.getElementById('user-logoB-sm').src = data.logoB || DEFAULT_LOGO;
+          document.getElementById('user-time-range').innerText = `${timeStart} - ${timeEnd}`; updateStatusDisplay('user-status', status);
+          if (data.category === 'sepakbola') { document.getElementById('user-formationA').innerText = '4-1-2-3'; document.getElementById('user-formationB').innerText = '4-4-2'; } else { document.getElementById('user-formationA').innerText = 'Formasi Futsal'; document.getElementById('user-formationB').innerText = 'Formasi Futsal'; }
+          const formData = (data.formation && data.formation.A.length > 0) ? data.formation : getDefaultFormation(data.category); renderUserPitch(formData); switchPage('user');
         }
       }
 
       function updateStatusDisplay(elementId, status) {
         const el = document.getElementById(elementId);
-        if (status === 'live') {
-          el.innerHTML = `<span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> LIVE`;
-          el.className = "text-red-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2";
-        } else if (status === 'finished') {
-          el.innerHTML = `<i class="fa-solid fa-check-circle text-emerald-500"></i> SELESAI`;
-          el.className = "text-emerald-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2";
-        } else {
-          el.innerHTML = `<i class="fa-solid fa-clock"></i> AKAN DATANG`;
-          el.className = "text-gray-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2";
-        }
+        if (status === 'live') { el.innerHTML = `<span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> LIVE`; el.className = "text-red-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2"; } 
+        else if (status === 'finished') { el.innerHTML = `<i class="fa-solid fa-check-circle text-emerald-500"></i> SELESAI`; el.className = "text-emerald-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2"; } 
+        else { el.innerHTML = `<i class="fa-solid fa-clock"></i> AKAN DATANG`; el.className = "text-gray-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2"; }
       }
 
-      // === RENDER LAPANGAN USER ===
-      function renderUserPitch(formation) {
-        const pitch = document.getElementById('user-pitch');
-        pitch.innerHTML = '';
-        
-        formation.A.forEach(p => pitch.appendChild(createPlayerElement(p, 'A', false)));
-        formation.B.forEach(p => pitch.appendChild(createPlayerElement(p, 'B', false)));
-      }
+      function renderUserPitch(formation) { const pitch = document.getElementById('user-pitch'); pitch.innerHTML = ''; formation.A.forEach(p => pitch.appendChild(createPlayerElement(p, 'A', false))); formation.B.forEach(p => pitch.appendChild(createPlayerElement(p, 'B', false))); }
+      function renderAdminPitch() { const pitch = document.getElementById('admin-pitch'); pitch.innerHTML = ''; tempFormation.A.forEach((p, index) => pitch.appendChild(createPlayerElement(p, 'A', true, index))); tempFormation.B.forEach((p, index) => pitch.appendChild(createPlayerElement(p, 'B', true, index))); }
 
-      // === RENDER LAPANGAN ADMIN ===
-      function renderAdminPitch() {
-        const pitch = document.getElementById('admin-pitch');
-        pitch.innerHTML = '';
-
-        tempFormation.A.forEach((p, index) => pitch.appendChild(createPlayerElement(p, 'A', true, index)));
-        tempFormation.B.forEach((p, index) => pitch.appendChild(createPlayerElement(p, 'B', true, index)));
-      }
-
-      // FUNGSI MEMBUAT ELEMEN PEMAIN
       function createPlayerElement(player, team, isAdminView, index) {
-        const div = document.createElement('div');
-        div.className = `player-dot team-${team.toLowerCase()}`;
-        div.style.left = player.x + '%'; div.style.top = player.y + '%';
-        
-        let innerHTML = `
-          <img src="${AVATAR_URL}" class="player-avatar">
-          <div class="player-label">
-            <span class="player-rating">${player.rating || '6.5'}</span>
-            <span>${player.name}</span>
-          </div>
-        `;
-
-        if (isAdminView) {
-          innerHTML += `<div class="delete-btn" onclick="event.stopPropagation(); removePlayer('${team}', ${index})"><i class="fa-solid fa-xmark"></i></div>`;
-        }
-
+        const div = document.createElement('div'); div.className = `player-dot team-${team.toLowerCase()}`; div.style.left = player.x + '%'; div.style.top = player.y + '%';
+        let innerHTML = `<img src="${AVATAR_URL}" class="player-avatar"><div class="player-label"><span class="player-rating">${player.rating || '6.5'}</span><span>${player.name}</span></div>`;
+        if (isAdminView) { innerHTML += `<div class="delete-btn" onclick="event.stopPropagation(); removePlayer('${team}', ${index})"><i class="fa-solid fa-xmark"></i></div>`; }
         div.innerHTML = innerHTML;
-
         if (isAdminView) {
-          // Klik untuk edit nama (tanpa prompt, langsung ganti via input di bawah)
-          div.addEventListener('click', (e) => {
-            if(e.target.closest('.delete-btn')) return;
-            // Kita gunakan prompt sederhana agar tidak perlu ubah layout
-            const newName = prompt("Ubah nama pemain:", player.name);
-            if (newName !== null && newName.trim() !== "") {
-              tempFormation[team][index].name = newName;
-              renderAdminPitch();
-            }
-          });
-
-          // Drag & Drop
+          div.addEventListener('click', (e) => { if(e.target.closest('.delete-btn')) return; const newName = prompt("Ubah nama pemain:", player.name); if (newName !== null && newName.trim() !== "") { tempFormation[team][index].name = newName; renderAdminPitch(); } });
           div.addEventListener('mousedown', (e) => startDrag(e, div, team, index, document.getElementById('admin-pitch')));
           div.addEventListener('touchstart', (e) => startDrag(e, div, team, index, document.getElementById('admin-pitch')), {passive: false});
         }
-
         return div;
       }
 
       function startDrag(e, element, team, index, container) {
-        if (e.target.closest('.delete-btn')) return;
-        e.preventDefault();
-        draggedPlayer = { element, team, index, container };
-
+        if (e.target.closest('.delete-btn')) return; e.preventDefault(); draggedPlayer = { element, team, index, container };
         function onMove(moveEvent) {
-          if (!draggedPlayer) return;
-          const rect = container.getBoundingClientRect();
-          let clientX, clientY;
-          if (moveEvent.type === 'mousemove') {
-            clientX = moveEvent.clientX; clientY = moveEvent.clientY;
-          } else {
-            clientX = moveEvent.touches[0].clientX; clientY = moveEvent.touches[0].clientY;
-          }
-
-          let x = ((clientX - rect.left) / rect.width) * 100;
-          let y = ((clientY - rect.top) / rect.height) * 100;
-          x = Math.max(5, Math.min(95, x)); y = Math.max(5, Math.min(95, y));
-
-          element.style.left = x + '%'; element.style.top = y + '%';
-          tempFormation[draggedPlayer.team][draggedPlayer.index].x = Math.round(x);
-          tempFormation[draggedPlayer.team][draggedPlayer.index].y = Math.round(y);
+          if (!draggedPlayer) return; const rect = container.getBoundingClientRect(); let clientX, clientY;
+          if (moveEvent.type === 'mousemove') { clientX = moveEvent.clientX; clientY = moveEvent.clientY; } else { clientX = moveEvent.touches[0].clientX; clientY = moveEvent.touches[0].clientY; }
+          let x = ((clientX - rect.left) / rect.width) * 100; let y = ((clientY - rect.top) / rect.height) * 100; x = Math.max(5, Math.min(95, x)); y = Math.max(5, Math.min(95, y));
+          element.style.left = x + '%'; element.style.top = y + '%'; tempFormation[draggedPlayer.team][draggedPlayer.index].x = Math.round(x); tempFormation[draggedPlayer.team][draggedPlayer.index].y = Math.round(y);
         }
-
-        function onUp() {
-          draggedPlayer = null;
-          document.removeEventListener('mousemove', onMove);
-          document.removeEventListener('mouseup', onUp);
-          document.removeEventListener('touchmove', onMove);
-          document.removeEventListener('touchend', onUp);
-        }
-
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
-        document.addEventListener('touchmove', onMove, {passive: false});
-        document.addEventListener('touchend', onUp);
+        function onUp() { draggedPlayer = null; document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onUp); }
+        document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp); document.addEventListener('touchmove', onMove, {passive: false}); document.addEventListener('touchend', onUp);
       }
 
-      function addPlayer(team) {
-        const defaultX = 50;
-        const defaultY = team === 'A' ? 90 : 10;
-        tempFormation[team].push({ name: 'Pemain Baru', x: defaultX, y: defaultY, rating: '6.0' });
-        renderAdminPitch();
-      }
-
-      function removePlayer(team, index) {
-        tempFormation[team].splice(index, 1);
-        renderAdminPitch();
-      }
-
+      function addPlayer(team) { const defaultX = 50; const defaultY = team === 'A' ? 90 : 10; tempFormation[team].push({ name: 'Pemain Baru', x: defaultX, y: defaultY, rating: '6.0' }); renderAdminPitch(); }
+      function removePlayer(team, index) { tempFormation[team].splice(index, 1); renderAdminPitch(); }
       function openModal(id) { document.getElementById(id).classList.add('active'); }
       function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
       function handleLogin(e) {
-        e.preventDefault();
-        const pass = document.getElementById('adminPass').value;
+        e.preventDefault(); const pass = document.getElementById('adminPass').value;
         if (pass === 'admin123') {
-          isAdmin = true;
-          document.body.classList.add('is-admin');
-          document.getElementById('btn-login').classList.add('hide');
-          document.getElementById('admin-indicator').classList.remove('hidden');
-          document.getElementById('admin-indicator').classList.add('flex');
-          closeModal('loginModal');
-          renderLanding(); 
-          renderBracket(); // Refresh bagan untuk munculkan tombol edit
-        } else {
-          alert("Password Salah! (admin123)");
-        }
+          isAdmin = true; document.body.classList.add('is-admin'); document.getElementById('btn-login').classList.add('hide'); document.getElementById('admin-indicator').classList.remove('hidden'); document.getElementById('admin-indicator').classList.add('flex'); closeModal('loginModal'); renderLanding(); renderBracket(); 
+        } else { alert("Password Salah! (admin123)"); }
         document.getElementById('adminPass').value = '';
       }
 
-      function logoutAdmin() {
-        isAdmin = false;
-        document.body.classList.remove('is-admin');
-        document.getElementById('btn-login').classList.remove('hide');
-        document.getElementById('admin-indicator').classList.add('hidden');
-        document.getElementById('admin-indicator').classList.remove('flex');
-        switchPage('landing');
-      }
+      function logoutAdmin() { isAdmin = false; document.body.classList.remove('is-admin'); document.getElementById('btn-login').classList.remove('hide'); document.getElementById('admin-indicator').classList.add('hidden'); document.getElementById('admin-indicator').classList.remove('flex'); switchPage('landing'); }
 
-      function readFileAsDataURL(file) {
-        return new Promise((resolve) => {
-          if (!file) return resolve(null);
-          const reader = new FileReader();
-          reader.onload = (e) => resolve(e.target.result);
-          reader.readAsDataURL(file);
-        });
-      }
+      function readFileAsDataURL(file) { return new Promise((resolve) => { if (!file) return resolve(null); const reader = new FileReader(); reader.onload = (e) => resolve(e.target.result); reader.readAsDataURL(file); }); }
 
       async function saveAdminData(e) {
-        e.preventDefault(); 
-        
-        const id = document.getElementById('active-match-id').value;
-        const match = matchesData[id];
-
-        match.competition = document.getElementById('input-competition').value;
-        match.scheduleStart = document.getElementById('input-schedule-start').value;
-        match.scheduleEnd = document.getElementById('input-schedule-end').value;
-        
-        const newCategory = document.getElementById('input-category').value;
-        if (match.category !== newCategory && (!match.formation || match.formation.A.length === 0)) {
-            match.formation = getDefaultFormation(newCategory);
-        }
-        match.category = newCategory;
-
-        match.teamA = document.getElementById('input-teamA').value;
-        match.scoreA = parseInt(document.getElementById('input-scoreA').value) || 0;
-        match.teamB = document.getElementById('input-teamB').value;
-        match.scoreB = parseInt(document.getElementById('input-scoreB').value) || 0;
-        match.formation = tempFormation;
-
-        const fileA = document.getElementById('input-logoA').files[0];
-        const fileB = document.getElementById('input-logoB').files[0];
-        const fileComp = document.getElementById('input-comp-logo').files[0];
-        const fileTrophy = document.getElementById('input-trophy').files[0];
-
-        if (fileA) match.logoA = await readFileAsDataURL(fileA);
-        if (fileB) match.logoB = await readFileAsDataURL(fileB);
-        if (fileComp) match.compLogo = await readFileAsDataURL(fileComp);
-        if (fileTrophy) match.trophyImg = await readFileAsDataURL(fileTrophy);
-
-        saveToStorage();
-        alert("Data & Formasi Berhasil Disimpan!");
-        
-        setTimeout(() => {
-          switchPage('landing');
-        }, 100);
+        e.preventDefault(); const id = document.getElementById('active-match-id').value; const match = matchesData[id];
+        match.competition = document.getElementById('input-competition').value; match.scheduleStart = document.getElementById('input-schedule-start').value; match.scheduleEnd = document.getElementById('input-schedule-end').value;
+        const newCategory = document.getElementById('input-category').value; if (match.category !== newCategory && (!match.formation || match.formation.A.length === 0)) { match.formation = getDefaultFormation(newCategory); } match.category = newCategory;
+        match.teamA = document.getElementById('input-teamA').value; match.scoreA = parseInt(document.getElementById('input-scoreA').value) || 0; match.teamB = document.getElementById('input-teamB').value; match.scoreB = parseInt(document.getElementById('input-scoreB').value) || 0; match.formation = tempFormation;
+        const fileA = document.getElementById('input-logoA').files[0]; const fileB = document.getElementById('input-logoB').files[0]; const fileComp = document.getElementById('input-comp-logo').files[0]; const fileTrophy = document.getElementById('input-trophy').files[0];
+        if (fileA) match.logoA = await readFileAsDataURL(fileA); if (fileB) match.logoB = await readFileAsDataURL(fileB); if (fileComp) match.compLogo = await readFileAsDataURL(fileComp); if (fileTrophy) match.trophyImg = await readFileAsDataURL(fileTrophy);
+        saveToStorage(); alert("Data & Formasi Berhasil Disimpan!"); setTimeout(() => { switchPage('landing'); }, 100);
       }
 
-      document.addEventListener('DOMContentLoaded', () => {
-        switchPage('landing');
-        setInterval(() => {
-            if(!document.getElementById('page-landing').classList.contains('hide')) {
-                renderLanding();
-            } else if (!document.getElementById('page-history').classList.contains('hide')) {
-                renderHistory();
-            }
-        }, 60000); 
-      });
-
+      document.addEventListener('DOMContentLoaded', () => { switchPage('landing'); setInterval(() => { if(!document.getElementById('page-landing').classList.contains('hide')) { renderLanding(); } else if (!document.getElementById('page-history').classList.contains('hide')) { renderHistory(); } }, 60000); });
     </script>
   </body>
 </html>

@@ -55,9 +55,14 @@
             <a href="#" class="nav-tab" onclick="filterCategory('futsal')">Futsal</a>
           </div>
           
-          <div id="admin-indicator" class="hidden items-center gap-2 bg-emerald-500/20 border border-emerald-500/50 px-3 py-1 rounded-full text-xs text-emerald-400">
-            <i class="fa-solid fa-shield-halved"></i> Admin
-            <button onclick="logoutAdmin()" class="ml-1 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+          <!-- Indikator Admin & Tombol Logout -->
+          <div id="admin-indicator" class="hidden items-center gap-2">
+            <span class="bg-emerald-500/20 border border-emerald-500/50 px-3 py-1 rounded-full text-xs text-emerald-400">
+              <i class="fa-solid fa-shield-halved mr-1"></i> Admin
+            </span>
+            <button onclick="logoutAdmin()" class="bg-red-500/20 hover:bg-red-500 text-red-300 hover:text-white border border-red-500/50 px-3 py-1 rounded-full text-xs font-bold transition">
+              <i class="fa-solid fa-right-from-bracket mr-1"></i> Keluar
+            </button>
           </div>
           
           <button id="btn-login" onclick="openModal('loginModal')" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-3 sm:px-4 py-1.5 rounded text-xs sm:text-sm transition transform hover:scale-105 shadow-md">
@@ -171,11 +176,9 @@
           <div class="lg:col-span-3 bg-[#1e293b] rounded-2xl p-5 sm:p-6 shadow-xl border border-gray-700 border-t-4 border-t-amber-500">
             <h3 class="text-base sm:text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-amber-500"></i> Edit Data Pertandingan</h3>
             
-            <!-- PERHATIKAN: ID FORM INI ADALAH 'admin-form' -->
             <form id="admin-form" onsubmit="saveAdminData(event)" class="space-y-4">
               <input type="hidden" id="active-match-id">
               
-              <!-- KOMPETISI & JADWAL -->
               <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700 grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div class="sm:col-span-3">
                   <label class="block text-[10px] font-bold text-gray-400 mb-1">Nama Kompetisi</label>
@@ -198,7 +201,6 @@
                 </div>
               </div>
 
-              <!-- LOGO & NAMA TIM A -->
               <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700">
                 <label class="block text-[10px] font-bold text-gray-400 mb-1">Tim A (Kiri)</label>
                 <div class="flex gap-2 mb-2">
@@ -211,7 +213,6 @@
                 </div>
               </div>
 
-              <!-- LOGO & NAMA TIM B -->
               <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700">
                 <label class="block text-[10px] font-bold text-gray-400 mb-1">Tim B (Kanan)</label>
                 <div class="flex gap-2 mb-2">
@@ -224,7 +225,6 @@
                 </div>
               </div>
 
-              <!-- LOGO KOMPETISI -->
               <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700 flex items-center justify-between">
                 <div>
                   <label class="block text-[10px] font-bold text-gray-400 mb-1">Logo Kompetisi</label>
@@ -233,14 +233,12 @@
                 <img src="" id="admin-comp-logo-preview" class="w-10 h-10 object-contain bg-gray-800 rounded">
               </div>
 
-              <!-- GAMBAR FORMASI -->
               <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700">
                 <label class="block text-[10px] font-bold text-gray-400 mb-1">Gambar Formasi / Lineup Lapangan</label>
                 <input type="file" id="input-formation-img" accept="image/*" class="w-full text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1">
               </div>
 
-              <!-- TOMBOL SIMPAN (Type Submit) -->
-              <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-lg transition mt-2 transform active:scale-95 shadow-lg cursor-pointer">SIMPAN SEMUA PERUBAHAN</button>
+              <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-lg transition mt-2 transform active:scale-95 shadow-lg cursor-pointer">SIMPAN & KEMBALI KE LIVE</button>
             </form>
           </div>
 
@@ -299,20 +297,22 @@
         }
       };
 
-      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_v2')) || defaultMatches;
+      // Ambil data dari LocalStorage. Jika belum ada, pakai default.
+      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_final')) || defaultMatches;
+      
       let isAdmin = false;
       let currentMatchId = null;
       let currentCategory = 'live';
 
+      // Fungsi Simpan ke LocalStorage
       function saveToStorage() {
-        localStorage.setItem('unwahas_matches_v2', JSON.stringify(matchesData));
+        localStorage.setItem('unwahas_matches_final', JSON.stringify(matchesData));
       }
 
       function getAutoStatus(match) {
         const now = new Date();
         const start = new Date(match.scheduleStart);
         const end = new Date(match.scheduleEnd);
-        
         if (now >= start && now <= end) return 'live';
         if (now > end) return 'finished';
         return 'upcoming';
@@ -443,11 +443,8 @@
         if (isAdmin) {
           document.getElementById('active-match-id').value = matchId;
           document.getElementById('input-competition').value = data.competition;
-          
-          // FIX DATETIME-LOCAL: Pastikan formatnya YYYY-MM-DDTHH:mm
           document.getElementById('input-schedule-start').value = data.scheduleStart || '';
           document.getElementById('input-schedule-end').value = data.scheduleEnd || '';
-          
           document.getElementById('input-category').value = data.category;
           
           document.getElementById('input-teamA').value = data.teamA;
@@ -474,7 +471,7 @@
           document.getElementById('admin-time-range').innerText = `${timeStart} - ${timeEnd}`;
           updateStatusDisplay('admin-status', status);
           
-          // Reset input file setiap kali buka halaman agar tidak nyangkut
+          // Reset input file
           document.getElementById('input-logoA').value = '';
           document.getElementById('input-logoB').value = '';
           document.getElementById('input-comp-logo').value = '';
@@ -533,7 +530,7 @@
           isAdmin = true;
           document.body.classList.add('admin');
           document.getElementById('btn-login').classList.add('hide');
-          document.getElementById('admin-indicator').classList.remove('hide');
+          document.getElementById('admin-indicator').classList.remove('hidden');
           document.getElementById('admin-indicator').classList.add('flex');
           closeModal('loginModal');
           
@@ -550,14 +547,14 @@
         isAdmin = false;
         document.body.classList.remove('admin');
         document.getElementById('btn-login').classList.remove('hide');
-        document.getElementById('admin-indicator').classList.add('hide');
+        document.getElementById('admin-indicator').classList.add('hidden');
         document.getElementById('admin-indicator').classList.remove('flex');
-        if (!document.getElementById('page-admin').classList.contains('hide')) {
-           goToHome();
-        }
+        
+        // Langsung kembalikan ke halaman utama
+        goToHome();
       }
 
-      // === FUNGSI SIMPAN (SUDAH DIPERBAIKI TOTAL) ===
+      // === FUNGSI SIMPAN (AUTO KEMBALI KE LIVE) ===
       function readFileAsDataURL(file) {
         return new Promise((resolve) => {
           if (!file) return resolve(null);
@@ -568,12 +565,12 @@
       }
 
       async function saveAdminData(e) {
-        e.preventDefault(); // Mencegah halaman reload
+        e.preventDefault(); 
         
         const id = document.getElementById('active-match-id').value;
         const match = matchesData[id];
 
-        // 1. Ambil data teks
+        // Ambil data teks
         match.competition = document.getElementById('input-competition').value;
         match.scheduleStart = document.getElementById('input-schedule-start').value;
         match.scheduleEnd = document.getElementById('input-schedule-end').value;
@@ -584,38 +581,37 @@
         match.teamB = document.getElementById('input-teamB').value;
         match.scoreB = parseInt(document.getElementById('input-scoreB').value) || 0;
 
-        // 2. Ambil file jika ada
+        // Ambil file
         const fileA = document.getElementById('input-logoA').files[0];
         const fileB = document.getElementById('input-logoB').files[0];
         const fileComp = document.getElementById('input-comp-logo').files[0];
         const fileForm = document.getElementById('input-formation-img').files[0];
 
-        // 3. Proses file (Tunggu sampai semua selesai dibaca)
+        // Proses file (Tunggu sampai selesai)
         if (fileA) match.logoA = await readFileAsDataURL(fileA);
         if (fileB) match.logoB = await readFileAsDataURL(fileB);
         if (fileComp) match.compLogo = await readFileAsDataURL(fileComp);
         if (fileForm) match.formationImg = await readFileAsDataURL(fileForm);
 
-        // 4. Simpan ke LocalStorage
+        // Simpan ke LocalStorage
         saveToStorage();
         
-        // 5. Tampilkan notifikasi sukses
-        alert("Data & Gambar Berhasil Disimpan Permanen!");
+        // Notifikasi
+        alert("Data Berhasil Disimpan Permanen!");
         
-        // 6. Refresh Tampilan Admin dan Halaman Utama
-        openMatch(id);
-        renderLanding();
+        // LANGSUNG KEMBALI KE HALAMAN LIVE (LANDING PAGE)
+        goToHome();
       }
 
       document.addEventListener('DOMContentLoaded', () => {
         filterCategory('live');
         
-        // Cek status secara berkala tanpa membuat gambar kedip
+        // Cek status setiap 1 menit (tanpa membuat gambar kedip)
         setInterval(() => {
             if(!document.getElementById('page-landing').classList.contains('hide')) {
                 renderLanding();
             }
-        }, 60000); // 1 menit sekali
+        }, 60000); 
       });
 
     </script>

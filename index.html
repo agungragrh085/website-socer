@@ -33,10 +33,9 @@
       .modal { display: none; }
       .modal.active { display: flex; }
 
-      /* ==== PERBAIKAN LAPANGAN & PEMAIN (MIRIP GAMBAR) ==== */
+      /* ==== LAPANGAN & PEMAIN ==== */
       .pitch-container {
-        position: relative; width: 100%; max-width: 500px; aspect-ratio: 2/3;
-        /* Gambar lapangan hijau asli */
+        position: relative; width: 100%; max-width: 450px; aspect-ratio: 2/3;
         background-image: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');
         background-size: cover; background-position: center; border-radius: 4px;
         border: 1px solid #334155; overflow: hidden; margin: 0 auto;
@@ -44,38 +43,24 @@
       }
       
       .player-dot {
-        position: absolute; width: 32px; height: 32px; border-radius: 50%;
+        position: absolute; width: 34px; height: 34px; border-radius: 50%;
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        font-size: 10px; font-weight: bold; color: white;
         transform: translate(-50%, -50%); cursor: grab;
-        z-index: 10; background-color: transparent;
-        border: 2px solid white; /* Border putih di avatar */
+        z-index: 10; background-color: transparent; border: 2px solid white;
       }
       
       .player-dot:active { cursor: grabbing; z-index: 20; }
-
-      /* Avatar Pemain */
-      .player-avatar {
-        width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
-        background-color: #cbd5e1; /* Warna abu-abu default */
-      }
+      .player-avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background-color: #cbd5e1; }
       
-      /* Kotak Nama & Rating di bawah pemain */
       .player-label {
-        position: absolute; top: 34px; white-space: nowrap;
-        background: #1e293b; /* Warna kotak biru gelap */
-        padding: 2px 6px; border-radius: 2px;
-        border: 1px solid #334155;
-        color: white; font-size: 9px; font-weight: bold;
+        position: absolute; top: 38px; white-space: nowrap;
+        background: #1e293b; padding: 2px 6px; border-radius: 2px;
+        border: 1px solid #334155; color: white; font-size: 9px; font-weight: bold;
         display: flex; flex-direction: column; align-items: center;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        z-index: 11;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.5); z-index: 11;
       }
-      .player-rating {
-        color: #fbbf24; font-size: 9px; margin-bottom: 1px; /* Kuning */
-      }
+      .player-rating { color: #fbbf24; font-size: 9px; margin-bottom: 1px; }
 
-      /* Tombol Hapus (X) di Admin */
       .delete-btn {
         position: absolute; top: -4px; right: -4px; background: #ef4444; color: white;
         border-radius: 50%; width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;
@@ -84,18 +69,10 @@
       }
       body.is-admin .delete-btn { display: flex; }
 
-      /* ==== GARIS BAGAN (BRACKET LINES) ==== */
-      .bracket-column { display: flex; flex-direction: column; justify-content: space-around; gap: 2rem; }
-      .bracket-match { position: relative; display: flex; flex-direction: column; justify-content: center; }
-      
-      /* Garis Penghubung Kanan */
-      .bracket-match::after {
-        content: ''; position: absolute; right: -2rem; top: 50%; width: 2rem; border-bottom: 2px solid #475569;
-      }
-      /* Garis Vertikal */
-      .bracket-connector {
-        position: absolute; right: -2rem; width: 2px; background: #475569;
-      }
+      /* ==== BAGAN LINES ==== */
+      .bracket-col { display: flex; flex-direction: column; gap: 2rem; }
+      .bracket-card { position: relative; }
+      .bracket-connector-right { position: absolute; right: -2rem; top: 50%; width: 2rem; border-top: 2px solid #475569; }
     </style>
   </head>
   <body class="min-h-screen flex flex-col">
@@ -132,9 +109,8 @@
       </div>
     </nav>
 
-    <!-- ================= HALAMAN 1: LANDING PAGE / LIVE ================= -->
+    <!-- LANDING PAGE -->
     <main id="page-landing" class="flex-grow bg-stadium flex flex-col items-center pt-8 sm:pt-10 px-2 sm:px-0">
-      
       <div class="flex gap-4 sm:gap-8 mb-8">
         <div onclick="filterCategory('live')" id="cat-live" class="flex flex-col items-center gap-2 cursor-pointer group">
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-500 rounded-full flex items-center justify-center text-black text-xl sm:text-2xl group-hover:scale-110 transition shadow-[0_0_15px_rgba(245,158,11,0.5)]"><i class="fa-solid fa-tower-broadcast"></i></div>
@@ -161,33 +137,34 @@
       </div>
     </main>
 
-    <!-- ================= HALAMAN 2: BAGAN PERTANDINGAN (FULL CUSTOM UI) ================= -->
+    <!-- BAGAN PAGE -->
     <main id="page-bracket" class="hide flex-grow bg-stadium pt-8 px-4">
       <div class="max-w-6xl mx-auto">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-amber-500 flex items-center gap-2"><i class="fa-solid fa-sitemap"></i> Bagan Turnamen</h2>
-            <!-- Tombol Tambah Bagan (Hanya Admin) -->
-            <button onclick="addBracketMatch()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow-lg items-center gap-2" id="btn-add-bracket">
-                <i class="fa-solid fa-plus"></i> Tambah Pertandingan Bagan
+            <button onclick="addBracketNode()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow-lg items-center gap-2" id="btn-add-bracket">
+                <i class="fa-solid fa-plus"></i> Tambah Kotak Bagan
             </button>
         </div>
         
         <div class="bg-[#1e293b]/95 backdrop-blur-md rounded-xl p-8 overflow-x-auto shadow-2xl border border-gray-700 min-h-[500px]">
           
-          <!-- WADAH BAGAN CUSTOM (Flexbox Kiri-Kanan) -->
-          <div id="custom-bracket-area" class="flex gap-16 min-w-max items-center">
-             <!-- Kolom Kiri (Semifinal) -->
-             <div class="bracket-column" id="bracket-col-left"></div>
+          <!-- WADAH BAGAN (KIRI - KANAN) -->
+          <div class="flex gap-16 min-w-max items-center justify-center">
              
-             <!-- Kolom Kanan (Final) -->
-             <div class="bracket-column" id="bracket-col-right"></div>
+             <!-- KOLOM KIRI (SEMIFINAL) -->
+             <div class="bracket-col" id="bracket-col-left"></div>
+             
+             <!-- KOLOM KANAN (FINAL) -->
+             <div class="bracket-col" id="bracket-col-right"></div>
+
           </div>
           
         </div>
       </div>
     </main>
 
-    <!-- ================= HALAMAN 3: HISTORY ================= -->
+    <!-- HISTORY PAGE -->
     <main id="page-history" class="hide flex-grow bg-stadium pt-8 px-4">
       <div class="max-w-4xl mx-auto">
         <h2 class="text-2xl font-bold text-amber-500 mb-6 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pertandingan</h2>
@@ -197,7 +174,7 @@
       </div>
     </main>
 
-    <!-- ================= HALAMAN 4: DETAIL USER ================= -->
+    <!-- DETAIL USER -->
     <main id="page-user" class="hide flex-grow bg-[#0f172a] py-6 sm:py-8 px-4">
       <div class="max-w-5xl mx-auto">
         <button onclick="switchPage('landing')" class="text-gray-400 hover:text-white mb-6 flex items-center gap-2 text-sm transition">
@@ -205,23 +182,18 @@
         </button>
 
         <div class="bg-[#1e293b] rounded-2xl p-5 sm:p-10 shadow-xl border border-gray-700 relative overflow-hidden">
-          
-          <!-- Header Info -->
           <div class="text-center mb-6 flex justify-center items-center gap-3 flex-wrap">
             <img src="" id="user-comp-logo" class="w-8 h-8 object-contain" alt="logo">
             <span class="bg-amber-500/20 text-amber-500 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full border border-amber-500/30 uppercase tracking-widest" id="user-competition">-</span>
           </div>
 
-          <!-- Tampilan Lapangan User -->
           <div class="mt-8 flex flex-col items-center">
-            <div class="w-full max-w-[500px] flex justify-between items-center bg-[#1e293b] px-4 py-2 rounded-t-lg border border-gray-600 border-b-0 z-10">
+            <div class="w-full max-w-[450px] flex justify-between items-center bg-[#1e293b] px-4 py-2 rounded-t-lg border border-gray-600 border-b-0 z-10">
                 <div class="flex items-center gap-2"><img src="" id="user-logoA-sm" class="w-5 h-5"><span class="text-sm font-bold text-white" id="user-teamA-sm">Tim A</span></div>
                 <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded" id="user-formationA">4-1-2-3</span>
             </div>
-            
             <div class="pitch-container" id="user-pitch"></div>
-
-            <div class="w-full max-w-[500px] flex justify-between items-center bg-[#1e293b] px-4 py-2 rounded-b-lg border border-gray-600 border-t-0 z-10">
+            <div class="w-full max-w-[450px] flex justify-between items-center bg-[#1e293b] px-4 py-2 rounded-b-lg border border-gray-600 border-t-0 z-10">
                 <div class="flex items-center gap-2"><img src="" id="user-logoB-sm" class="w-5 h-5"><span class="text-sm font-bold text-white" id="user-teamB-sm">Tim B</span></div>
                 <span class="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded" id="user-formationB">4-4-2</span>
             </div>
@@ -230,7 +202,7 @@
       </div>
     </main>
 
-    <!-- ================= HALAMAN 5: DETAIL ADMIN ================= -->
+    <!-- DETAIL ADMIN -->
     <main id="page-admin" class="hide flex-grow bg-[#0f172a] py-6 sm:py-8 px-4">
       <div class="max-w-6xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -246,25 +218,23 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
           
-          <!-- KOLOM KIRI: Formasi Interaktif -->
           <div class="lg:col-span-3 bg-[#1e293b] rounded-2xl p-5 sm:p-6 shadow-xl border border-gray-700 flex flex-col items-center">
-            <h3 class="text-base sm:text-lg font-bold mb-4 border-b border-gray-700 pb-2 w-full text-center">Atur Formasi (Drag / Klik untuk Edit)</h3>
+            <h3 class="text-base sm:text-lg font-bold mb-4 border-b border-gray-700 pb-2 w-full text-center">Atur Formasi (Klik Pemain untuk Edit)</h3>
             
-            <div class="w-full max-w-[500px] flex justify-between items-center bg-[#1e293b] px-4 py-2 rounded-t-lg border border-gray-600 border-b-0">
+            <div class="w-full max-w-[450px] flex justify-between items-center bg-[#1e293b] px-4 py-2 rounded-t-lg border border-gray-600 border-b-0">
                 <span class="text-sm font-bold text-white" id="admin-teamA-label">Tim A</span>
             </div>
             <div class="pitch-container" id="admin-pitch"></div>
-            <div class="w-full max-w-[500px] flex justify-between items-center bg-[#1e293b] px-4 py-2 rounded-b-lg border border-gray-600 border-t-0">
+            <div class="w-full max-w-[450px] flex justify-between items-center bg-[#1e293b] px-4 py-2 rounded-b-lg border border-gray-600 border-t-0">
                 <span class="text-sm font-bold text-white" id="admin-teamB-label">Tim B</span>
             </div>
             
-            <div class="mt-4 flex gap-2 w-full max-w-[500px]">
+            <div class="mt-4 flex gap-2 w-full max-w-[450px]">
               <button type="button" onclick="addPlayer('A')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded transition"><i class="fa-solid fa-plus mr-1"></i> Pemain Tim A</button>
               <button type="button" onclick="addPlayer('B')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 rounded transition"><i class="fa-solid fa-plus mr-1"></i> Pemain Tim B</button>
             </div>
           </div>
 
-          <!-- KOLOM KANAN: Detail Pertandingan -->
           <div class="lg:col-span-2 bg-[#1e293b] rounded-2xl p-5 sm:p-6 shadow-xl border border-gray-700 border-t-4 border-t-amber-500">
             <h3 class="text-base sm:text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-amber-500"></i> Data Pertandingan</h3>
             
@@ -273,7 +243,7 @@
               
               <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700 space-y-3">
                 <div>
-                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Nama Kompetisi / Babak</label>
+                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Nama Kompetisi</label>
                   <input type="text" id="input-competition" class="w-full bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm" required>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -287,7 +257,7 @@
                   </div>
                 </div>
                 <div>
-                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Kategori (Formasi Default)</label>
+                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Kategori</label>
                   <select id="input-category" class="w-full bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm">
                     <option value="sepakbola">Sepakbola (11 Pemain)</option>
                     <option value="futsal">Futsal (5 Pemain)</option>
@@ -295,7 +265,6 @@
                 </div>
               </div>
 
-              <!-- Tim A -->
               <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700">
                 <label class="block text-[10px] font-bold text-emerald-400 mb-1">Tim A (Kiri)</label>
                 <div class="flex gap-2 mb-2">
@@ -305,7 +274,6 @@
                 <input type="file" id="input-logoA" accept="image/*" class="text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1 w-full">
               </div>
 
-              <!-- Tim B -->
               <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700">
                 <label class="block text-[10px] font-bold text-blue-400 mb-1">Tim B (Kanan)</label>
                 <div class="flex gap-2 mb-2">
@@ -344,9 +312,9 @@
     <script>
       const DEFAULT_TROPHY = 'https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg';
       const DEFAULT_LOGO = 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
-      const AVATAR_URL = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'; // Avatar abu-abu
+      const AVATAR_URL = 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
 
-      // === FUNGSI FORMASI DEFAULT (KOORDINAT PRESISI) ===
+      // === FORMASI DEFAULT (Posisi Presisi) ===
       function getDefaultFormation(category = 'sepakbola') {
         if (category === 'futsal') {
           return {
@@ -366,28 +334,19 @@
             ]
           };
         } else {
-          // FORMASI SEPAKBOLA: Tim A (4-1-2-3), Tim B (4-4-2)
+          // SEPAKBOLA: A (4-1-2-3), B (4-4-2)
           return {
             A: [
-              // Kiper
               {name: '23 L. Simón', x: 50, y: 95, rating: '7.0'},
-              // Bek (4)
               {name: '12 P. Porro', x: 15, y: 80, rating: '6.5'}, {name: '22 P. Cubarsí', x: 38, y: 80, rating: '6.5'}, {name: '14 A. Laporte', x: 62, y: 80, rating: '6.5'}, {name: '24 M. Cucurella', x: 85, y: 80, rating: '6.7'},
-              // Gelandang Bertahan (1)
               {name: '16 Rodri', x: 50, y: 65, rating: '6.8'},
-              // Gelandang Serang (2)
               {name: '10 D. Olmo', x: 30, y: 50, rating: '6.9'}, {name: '8 F. Ruiz', x: 70, y: 50, rating: '6.9'},
-              // Penyerang (3)
               {name: '19 L. Yamal', x: 15, y: 30, rating: '6.9'}, {name: '21 M. Oyarzabal', x: 50, y: 30, rating: '6.9'}, {name: '15 A. Baena', x: 85, y: 30, rating: '6.9'}
             ],
             B: [
-              // Kiper
               {name: '23 E. Martínez', x: 50, y: 5, rating: '7.0'},
-              // Bek (4)
               {name: '3 N. Tagliafico', x: 15, y: 20, rating: '6.5'}, {name: '8 L. Martínez', x: 38, y: 20, rating: '6.5'}, {name: '13 C. Romero', x: 62, y: 20, rating: '6.5'}, {name: '4 G. Montiel', x: 85, y: 20, rating: '6.5'},
-              // Gelandang (4)
               {name: '15 N. González', x: 15, y: 40, rating: '6.5'}, {name: '20 A. Mac Allister', x: 38, y: 40, rating: '6.5'}, {name: '24 E. Fernández', x: 62, y: 40, rating: '6.5'}, {name: '7 R. De Paul', x: 85, y: 40, rating: '6.5'},
-              // Penyerang (2)
               {name: '9 J. Álvarez', x: 35, y: 60, rating: '6.5'}, {name: '10 L. Messi', x: 65, y: 60, rating: '6.5'}
             ]
           };
@@ -404,15 +363,15 @@
         }
       };
 
-      // === DATA BAGAN CUSTOM (Disimpan terpisah) ===
+      // DATA BAGAN (Bisa diedit Admin lewat UI)
       const defaultBracket = [
         { id: 'b1', col: 'left', title: 'Semifinal 1', teamA: 'Spanyol', scoreA: 2, teamB: 'Prancis', scoreB: 1 },
         { id: 'b2', col: 'left', title: 'Semifinal 2', teamA: 'Argentina', scoreA: 3, teamB: 'Inggris', scoreB: 0 },
         { id: 'b3', col: 'right', title: 'Final', teamA: 'Spanyol', scoreA: 1, teamB: 'Argentina', scoreB: 0 }
       ];
 
-      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_v8')) || defaultMatches;
-      let bracketData = JSON.parse(localStorage.getItem('unwahas_bracket_v8')) || defaultBracket;
+      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_final_v1')) || defaultMatches;
+      let bracketData = JSON.parse(localStorage.getItem('unwahas_bracket_final_v1')) || defaultBracket;
       
       let isAdmin = false;
       let currentMatchId = null;
@@ -421,8 +380,8 @@
       let draggedPlayer = null;
 
       function saveToStorage() {
-        localStorage.setItem('unwahas_matches_v8', JSON.stringify(matchesData));
-        localStorage.setItem('unwahas_bracket_v8', JSON.stringify(bracketData));
+        localStorage.setItem('unwahas_matches_final_v1', JSON.stringify(matchesData));
+        localStorage.setItem('unwahas_bracket_final_v1', JSON.stringify(bracketData));
       }
 
       function getAutoStatus(match) {
@@ -446,12 +405,11 @@
         return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
       }
 
-      // === NAVIGASI HALAMAN ===
+      // === NAVIGASI ===
       function switchPage(page) {
         ['landing', 'bracket', 'history', 'user', 'admin'].forEach(p => {
           document.getElementById(`page-${p}`).classList.add('hide');
         });
-        
         ['live', 'sepakbola', 'futsal', 'bracket', 'history'].forEach(t => {
           document.getElementById(`nav-${t}`).classList.remove('active');
         });
@@ -463,7 +421,7 @@
         } else if (page === 'bracket') {
           document.getElementById('page-bracket').classList.remove('hide');
           document.getElementById('nav-bracket').classList.add('active');
-          renderBracket();
+          renderBracketUI(); // RENDER UI BAGAN
         } else if (page === 'history') {
           document.getElementById('page-history').classList.remove('hide');
           document.getElementById('nav-history').classList.add('active');
@@ -476,33 +434,49 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      // === RENDER BAGAN CUSTOM (FULL EDITABLE) ===
-      function renderBracket() {
-        const colLeft = document.getElementById('bracket-col-left');
-        const colRight = document.getElementById('bracket-col-right');
-        colLeft.innerHTML = '';
-        colRight.innerHTML = '';
+      // === RENDER UI BAGAN (BISA DIEDIT LANGSUNG) ===
+      function renderBracketUI() {
+        const leftCol = document.getElementById('bracket-col-left');
+        const rightCol = document.getElementById('bracket-col-right');
+        leftCol.innerHTML = '';
+        rightCol.innerHTML = '';
 
         document.getElementById('btn-add-bracket').classList.toggle('hidden', !isAdmin);
         document.getElementById('btn-add-bracket').classList.toggle('flex', isAdmin);
 
         bracketData.forEach(node => {
           const isRight = node.col === 'right';
-          let controls = '';
+          
+          let card = document.createElement('div');
+          card.className = 'relative bg-[#0f172a] rounded-lg p-3 border border-gray-700 w-64 shadow-lg mb-6 bracket-card';
 
           if (isAdmin) {
-            controls = `
+            // TAMPILAN EDIT (INPUT BOX)
+            card.innerHTML = `
               <div class="absolute -top-3 -right-3 flex gap-1 z-20">
-                <button onclick="editBracketNode('${node.id}')" class="bg-amber-500 text-black w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shadow-lg hover:scale-110 transition"><i class="fa-solid fa-pen"></i></button>
                 <button onclick="deleteBracketNode('${node.id}')" class="bg-red-500 text-white w-6 h-6 rounded-full text-xs font-bold flex items-center justify-center shadow-lg hover:scale-110 transition"><i class="fa-solid fa-xmark"></i></button>
               </div>
+              <div class="mb-2">
+                <input type="text" value="${node.title}" onchange="updateBracketNode('${node.id}', 'title', this.value)" class="w-full bg-[#1e293b] text-amber-500 text-xs font-bold uppercase tracking-widest text-center border border-gray-700 rounded px-2 py-1 outline-none focus:border-amber-500">
+              </div>
+              <div class="flex justify-between items-center mb-2 gap-2">
+                <input type="text" value="${node.teamA}" onchange="updateBracketNode('${node.id}', 'teamA', this.value)" class="w-full bg-transparent text-white text-sm font-bold border-b border-gray-700 outline-none focus:border-amber-500">
+                <input type="number" value="${node.scoreA}" onchange="updateBracketNode('${node.id}', 'scoreA', this.value)" class="w-12 bg-[#1e293b] text-amber-500 text-center font-bold border border-gray-700 rounded px-1 py-0.5 outline-none">
+              </div>
+              <div class="flex justify-between items-center gap-2">
+                <input type="text" value="${node.teamB}" onchange="updateBracketNode('${node.id}', 'teamB', this.value)" class="w-full bg-transparent text-white text-sm font-bold border-b border-gray-700 outline-none focus:border-amber-500">
+                <input type="number" value="${node.scoreB}" onchange="updateBracketNode('${node.id}', 'scoreB', this.value)" class="w-12 bg-[#1e293b] text-amber-500 text-center font-bold border border-gray-700 rounded px-1 py-0.5 outline-none">
+              </div>
+              <div class="mt-3 text-center">
+                 <select onchange="updateBracketNode('${node.id}', 'col', this.value)" class="bg-[#1e293b] text-xs text-gray-400 border border-gray-700 rounded px-2 py-1 outline-none">
+                    <option value="left" ${node.col === 'left' ? 'selected' : ''}>Posisi: Kiri</option>
+                    <option value="right" ${node.col === 'right' ? 'selected' : ''}>Posisi: Kanan</option>
+                 </select>
+              </div>
             `;
-          }
-
-          // Kotak Bagan
-          let cardHTML = `
-            <div class="relative bg-[#0f172a] rounded-lg p-3 border border-gray-700 w-56 shadow-lg bracket-match">
-              ${controls}
+          } else {
+            // TAMPILAN USER (HANYA LIHAT)
+            card.innerHTML = `
               <div class="text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 border-b border-gray-700 pb-1">${node.title}</div>
               <div class="flex justify-between items-center pb-1 mb-1 text-sm font-bold border-b border-gray-800">
                 <span>${node.teamA}</span> <span class="text-amber-500">${node.scoreA}</span>
@@ -510,70 +484,43 @@
               <div class="flex justify-between items-center text-sm font-bold">
                 <span>${node.teamB}</span> <span class="text-amber-500">${node.scoreB}</span>
               </div>
-            </div>
-          `;
-
-          if (isRight) {
-             colRight.innerHTML += cardHTML;
-          } else {
-             colLeft.innerHTML += cardHTML;
+            `;
           }
+
+          if (isRight) rightCol.appendChild(card);
+          else leftCol.appendChild(card);
         });
 
-        // Render Garis Penghubung (Sederhana)
-        // Hapus dulu jika ada
-        const oldConn = document.getElementById('bracket-connector');
-        if(oldConn) oldConn.remove();
-        
-        if (bracketData.filter(b => b.col === 'left').length > 0 && bracketData.filter(b => b.col === 'right').length > 0) {
-           // Logika penggambaran garis bisa ditambahkan di sini jika diperlukan
+        // Render garis penghubung (Garis melengkung)
+        // Logika ini disederhanakan. Jika ada di kiri & kanan, tarik garis horizontal
+        // Garis vertikal penghubung
+        if(bracketData.filter(b=>b.col==='left').length > 1) {
+            // Visual cue
         }
       }
 
-      // === TAMBAH/EDIT BAGAN (TANPA PROMPT ALERT) ===
-      function addBracketMatch() {
-        const title = "Babak Baru";
-        const id = 'b_' + Date.now();
-        bracketData.push({ id: id, col: 'left', title: title, teamA: 'Tim A', scoreA: 0, teamB: 'Tim B', scoreB: 0 });
-        saveToStorage();
-        renderBracket();
+      // === FUNGSI UPDATE BAGAN (DARI INPUT) ===
+      function updateBracketNode(id, field, value) {
+        const node = bracketData.find(b => b.id === id);
+        if (node) {
+          node[field] = (field === 'scoreA' || field === 'scoreB') ? parseInt(value) || 0 : value;
+          saveToStorage();
+          renderBracketUI(); // Render ulang agar tata letak menyesuaikan (misal pindah kolom)
+        }
       }
 
-      function editBracketNode(id) {
-        const node = bracketData.find(b => b.id === id);
-        if (!node) return;
-
-        // Gunakan modal UI sederhana (atau prompt jika tidak mau ribet)
-        // Karena Anda tidak mau prompt, kita gunakan inline edit pada next update.
-        // Untuk sementara, gunakan prompt cepat agar fungsional.
-        const newTitle = prompt("Nama Babak:", node.title);
-        if(newTitle !== null) node.title = newTitle;
-        
-        const newTeamA = prompt("Nama Tim A:", node.teamA);
-        if(newTeamA !== null) node.teamA = newTeamA;
-        
-        const newScoreA = prompt("Skor Tim A:", node.scoreA);
-        if(newScoreA !== null) node.scoreA = parseInt(newScoreA) || 0;
-        
-        const newTeamB = prompt("Nama Tim B:", node.teamB);
-        if(newTeamB !== null) node.teamB = newTeamB;
-        
-        const newScoreB = prompt("Skor Tim B:", node.scoreB);
-        if(newScoreB !== null) node.scoreB = parseInt(newScoreB) || 0;
-
-        // Pindah kolom
-        const newCol = prompt("Posisi (ketik 'left' atau 'right'):", node.col);
-        if(newCol === 'left' || newCol === 'right') node.col = newCol;
-
+      function addBracketNode() {
+        const id = 'b_' + Date.now();
+        bracketData.push({ id: id, col: 'left', title: 'Babak Baru', teamA: 'Tim A', scoreA: 0, teamB: 'Tim B', scoreB: 0 });
         saveToStorage();
-        renderBracket();
+        renderBracketUI();
       }
 
       function deleteBracketNode(id) {
         if(confirm('Hapus kotak bagan ini?')) {
            bracketData = bracketData.filter(b => b.id !== id);
            saveToStorage();
-           renderBracket();
+           renderBracketUI();
         }
       }
 
@@ -620,7 +567,6 @@
             const isLive = status === 'live';
             const timeStart = formatTime(m.scheduleStart);
             const timeEnd = formatTime(m.scheduleEnd);
-            
             const logoA = m.logoA || DEFAULT_LOGO;
             const logoB = m.logoB || DEFAULT_LOGO;
 
@@ -648,27 +594,19 @@
       function renderHistory() {
         const container = document.getElementById('history-list-container');
         container.innerHTML = '';
-
         const finishedMatches = Object.keys(matchesData).filter(key => getAutoStatus(matchesData[key]) === 'finished');
 
         if (finishedMatches.length === 0) {
-          container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">Belum ada pertandingan yang selesai.</div>`;
+          container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">Belum ada pertandingan selesai.</div>`;
           return;
         }
 
         finishedMatches.sort((a, b) => new Date(matchesData[b].scheduleEnd) - new Date(matchesData[a].scheduleEnd));
-
         let tableHTML = `
           <table class="w-full text-left border-collapse">
             <thead class="bg-[#0f172a] text-amber-500 text-xs uppercase tracking-wider">
-              <tr>
-                <th class="p-4 border-b border-gray-700">Tanggal</th>
-                <th class="p-4 border-b border-gray-700">Kompetisi</th>
-                <th class="p-4 border-b border-gray-700 text-center">Skor</th>
-                <th class="p-4 border-b border-gray-700">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-800">
+              <tr><th class="p-4 border-b border-gray-700">Tanggal</th><th class="p-4 border-b border-gray-700">Kompetisi</th><th class="p-4 border-b border-gray-700 text-center">Skor</th></tr>
+            </thead><tbody class="divide-y divide-gray-800">
         `;
 
         finishedMatches.forEach(id => {
@@ -679,20 +617,12 @@
               <td class="p-4 text-sm font-semibold text-gray-200">${m.competition}</td>
               <td class="p-4 text-center">
                 <div class="flex items-center justify-center gap-2 text-sm font-bold">
-                  <span>${m.teamA}</span>
-                  <img src="${m.logoA || DEFAULT_LOGO}" class="w-4 h-4 object-contain">
-                  <span class="bg-black border border-gray-600 px-2 py-0.5 rounded text-amber-500">${m.scoreA} - ${m.scoreB}</span>
-                  <img src="${m.logoB || DEFAULT_LOGO}" class="w-4 h-4 object-contain">
-                  <span>${m.teamB}</span>
+                  <span>${m.teamA}</span> <span class="bg-black border border-gray-600 px-2 py-0.5 rounded text-amber-500">${m.scoreA} - ${m.scoreB}</span> <span>${m.teamB}</span>
                 </div>
-              </td>
-              <td class="p-4">
-                <button onclick="openMatch('${id}')" class="text-xs text-amber-500 hover:text-white border border-amber-500/50 px-2 py-1 rounded transition">Lihat Detail</button>
               </td>
             </tr>
           `;
         });
-
         tableHTML += `</tbody></table>`;
         container.innerHTML = tableHTML;
       }
@@ -716,50 +646,37 @@
         switchPage('landing');
       }
 
-      // === TAMBAH PERTANDINGAN ===
       function addNewMatch() {
         const newId = 'm_' + Date.now(); 
         const now = new Date();
         const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000); 
-
         const formatISO = (date) => {
           const pad = (n) => n.toString().padStart(2, '0');
           return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
         };
-
         matchesData[newId] = {
-          competition: 'Kompetisi Baru',
-          scheduleStart: formatISO(now),
-          scheduleEnd: formatISO(tomorrow),
-          teamA: 'Tim A', logoA: '', scoreA: 0,
-          teamB: 'Tim B', logoB: '', scoreB: 0,
+          competition: 'Kompetisi Baru', scheduleStart: formatISO(now), scheduleEnd: formatISO(tomorrow),
+          teamA: 'Tim A', logoA: '', scoreA: 0, teamB: 'Tim B', logoB: '', scoreB: 0,
           compLogo: '', trophyImg: DEFAULT_TROPHY, category: 'sepakbola',
           formation: getDefaultFormation('sepakbola') 
         };
-
         saveToStorage();
         openMatch(newId); 
       }
 
       function deleteCurrentMatch() {
         if (!currentMatchId) return;
-        if (confirm('Apakah Anda yakin ingin menghapus pertandingan ini secara permanen?')) {
+        if (confirm('Hapus pertandingan ini?')) {
           delete matchesData[currentMatchId];
           saveToStorage();
-          alert('Pertandingan berhasil dihapus!');
           switchPage('landing');
         }
       }
 
-      // === BUKA MATCH ===
       function openMatch(matchId) {
         currentMatchId = matchId;
         const data = matchesData[matchId];
         const status = getAutoStatus(data);
-        const timeStart = formatTime(data.scheduleStart);
-        const timeEnd = formatTime(data.scheduleEnd);
-        const matchDate = formatDate(data.scheduleStart);
-        const trophySrc = data.trophyImg || DEFAULT_TROPHY;
 
         if (isAdmin) {
           document.getElementById('active-match-id').value = matchId;
@@ -771,11 +688,6 @@
           document.getElementById('input-scoreA').value = data.scoreA;
           document.getElementById('input-teamB').value = data.teamB;
           document.getElementById('input-scoreB').value = data.scoreB;
-          
-          document.getElementById('input-logoA').value = '';
-          document.getElementById('input-logoB').value = '';
-          document.getElementById('input-comp-logo').value = '';
-          document.getElementById('input-trophy').value = '';
           
           if (!data.formation || (data.formation.A.length === 0 && data.formation.B.length === 0)) {
              tempFormation = getDefaultFormation(data.category);
@@ -789,25 +701,11 @@
           renderAdminPitch();
           switchPage('admin');
         } else {
-          document.getElementById('user-comp-logo').src = data.compLogo || '';
           document.getElementById('user-competition').innerText = data.competition;
-          document.getElementById('user-date').innerText = matchDate;
-          document.getElementById('user-trophy').src = trophySrc;
-          
-          document.getElementById('user-teamA').innerText = data.teamA;
-          document.getElementById('user-logoA').src = data.logoA || DEFAULT_LOGO;
           document.getElementById('user-teamA-sm').innerText = data.teamA;
           document.getElementById('user-logoA-sm').src = data.logoA || DEFAULT_LOGO;
-          
-          document.getElementById('user-score').innerText = `${data.scoreA} - ${data.scoreB}`;
-          
-          document.getElementById('user-teamB').innerText = data.teamB;
-          document.getElementById('user-logoB').src = data.logoB || DEFAULT_LOGO;
           document.getElementById('user-teamB-sm').innerText = data.teamB;
           document.getElementById('user-logoB-sm').src = data.logoB || DEFAULT_LOGO;
-
-          document.getElementById('user-time-range').innerText = `${timeStart} - ${timeEnd}`;
-          updateStatusDisplay('user-status', status);
 
           if (data.category === 'sepakbola') {
              document.getElementById('user-formationA').innerText = '4-1-2-3';
@@ -823,39 +721,20 @@
         }
       }
 
-      function updateStatusDisplay(elementId, status) {
-        const el = document.getElementById(elementId);
-        if (status === 'live') {
-          el.innerHTML = `<span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> LIVE`;
-          el.className = "text-red-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2";
-        } else if (status === 'finished') {
-          el.innerHTML = `<i class="fa-solid fa-check-circle text-emerald-500"></i> SELESAI`;
-          el.className = "text-emerald-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2";
-        } else {
-          el.innerHTML = `<i class="fa-solid fa-clock"></i> AKAN DATANG`;
-          el.className = "text-gray-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2";
-        }
-      }
-
-      // === RENDER LAPANGAN USER ===
       function renderUserPitch(formation) {
         const pitch = document.getElementById('user-pitch');
         pitch.innerHTML = '';
-        
         formation.A.forEach(p => pitch.appendChild(createPlayerElement(p, 'A', false)));
         formation.B.forEach(p => pitch.appendChild(createPlayerElement(p, 'B', false)));
       }
 
-      // === RENDER LAPANGAN ADMIN ===
       function renderAdminPitch() {
         const pitch = document.getElementById('admin-pitch');
         pitch.innerHTML = '';
-
         tempFormation.A.forEach((p, index) => pitch.appendChild(createPlayerElement(p, 'A', true, index)));
         tempFormation.B.forEach((p, index) => pitch.appendChild(createPlayerElement(p, 'B', true, index)));
       }
 
-      // FUNGSI MEMBUAT ELEMEN PEMAIN
       function createPlayerElement(player, team, isAdminView, index) {
         const div = document.createElement('div');
         div.className = `player-dot team-${team.toLowerCase()}`;
@@ -876,7 +755,6 @@
         div.innerHTML = innerHTML;
 
         if (isAdminView) {
-          // Klik untuk edit nama (langsung tampil di prompt)
           div.addEventListener('click', (e) => {
             if(e.target.closest('.delete-btn')) return;
             const newName = prompt("Ubah nama pemain:", player.name);
@@ -886,11 +764,9 @@
             }
           });
 
-          // Drag & Drop
           div.addEventListener('mousedown', (e) => startDrag(e, div, team, index, document.getElementById('admin-pitch')));
           div.addEventListener('touchstart', (e) => startDrag(e, div, team, index, document.getElementById('admin-pitch')), {passive: false});
         }
-
         return div;
       }
 
@@ -903,11 +779,8 @@
           if (!draggedPlayer) return;
           const rect = container.getBoundingClientRect();
           let clientX, clientY;
-          if (moveEvent.type === 'mousemove') {
-            clientX = moveEvent.clientX; clientY = moveEvent.clientY;
-          } else {
-            clientX = moveEvent.touches[0].clientX; clientY = moveEvent.touches[0].clientY;
-          }
+          if (moveEvent.type === 'mousemove') { clientX = moveEvent.clientX; clientY = moveEvent.clientY; } 
+          else { clientX = moveEvent.touches[0].clientX; clientY = moveEvent.touches[0].clientY; }
 
           let x = ((clientX - rect.left) / rect.width) * 100;
           let y = ((clientY - rect.top) / rect.height) * 100;
@@ -958,7 +831,7 @@
           document.getElementById('admin-indicator').classList.add('flex');
           closeModal('loginModal');
           renderLanding(); 
-          renderBracket(); 
+          renderBracketUI(); 
         } else {
           alert("Password Salah! (admin123)");
         }
@@ -985,7 +858,6 @@
 
       async function saveAdminData(e) {
         e.preventDefault(); 
-        
         const id = document.getElementById('active-match-id').value;
         const match = matchesData[id];
 
@@ -1007,31 +879,17 @@
 
         const fileA = document.getElementById('input-logoA').files[0];
         const fileB = document.getElementById('input-logoB').files[0];
-        const fileComp = document.getElementById('input-comp-logo').files[0];
-        const fileTrophy = document.getElementById('input-trophy').files[0];
-
+        
         if (fileA) match.logoA = await readFileAsDataURL(fileA);
         if (fileB) match.logoB = await readFileAsDataURL(fileB);
-        if (fileComp) match.compLogo = await readFileAsDataURL(fileComp);
-        if (fileTrophy) match.trophyImg = await readFileAsDataURL(fileTrophy);
 
         saveToStorage();
         alert("Data & Formasi Berhasil Disimpan!");
-        
-        setTimeout(() => {
-          switchPage('landing');
-        }, 100);
+        setTimeout(() => { switchPage('landing'); }, 100);
       }
 
       document.addEventListener('DOMContentLoaded', () => {
         switchPage('landing');
-        setInterval(() => {
-            if(!document.getElementById('page-landing').classList.contains('hide')) {
-                renderLanding();
-            } else if (!document.getElementById('page-history').classList.contains('hide')) {
-                renderHistory();
-            }
-        }, 60000); 
       });
 
     </script>

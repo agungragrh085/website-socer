@@ -763,7 +763,7 @@
         if (isAdminView) { innerHTML += `<div class="delete-btn" onclick="event.stopPropagation(); removePlayer('${team}', ${index})"><i class="fa-solid fa-xmark"></i></div>`; }
         div.innerHTML = innerHTML;
         if (isAdminView) {
-          div.addEventListener('click', (e) => { if(e.target.closest('.delete-btn')) return; const newName = prompt("Ubah nama pemain:", player.name); if (newName !== null && newName.trim() !== "") { tempFormation[team][index].name = newName; renderAdminPitch(); } });
+          div.addEventListener('dblclick', (e) => {if (e.target.closest('.delete-btn')) return; const newName = prompt("Ubah nama pemain:", player.name); if (newName !== null && newName.trim() !== "") {tempFormation[team][index].name = newName.trim();renderAdminPitch();}});
           div.addEventListener('mousedown', (e) => startDrag(e, div, team, index, document.getElementById('admin-pitch')));
           div.addEventListener('touchstart', (e) => startDrag(e, div, team, index, document.getElementById('admin-pitch')), {passive: false});
         }

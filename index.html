@@ -33,13 +33,13 @@
       .modal { display: none; }
       .modal.active { display: flex; }
 
-      /* Gaya untuk Lapangan Formasi Interaktif */
+      /* LATAR LAPANGAN REALISTIS */
       .pitch-container {
         position: relative; width: 100%; max-width: 600px; aspect-ratio: 2/3;
-        background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Football_pitch_isometric.svg/600px-Football_pitch_isometric.svg.png');
+        /* Gambar lapangan sepak bola asli dari atas */
+        background-image: url('https://images.unsplash.com/photo-1574629810360-7efbbe195018?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');
         background-size: cover; background-position: center; border-radius: 12px;
         border: 2px solid #334155; overflow: hidden; margin: 0 auto;
-        background-color: #1e293b;
       }
       
       /* Pemain di Lapangan */
@@ -64,6 +64,9 @@
       .formation-controls { max-height: 400px; overflow-y: auto; }
       .formation-controls::-webkit-scrollbar { width: 6px; }
       .formation-controls::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+
+      /* Style Garis Bagan */
+      .bracket-line { border-left: 2px solid #475569; border-top: 2px solid #475569; border-bottom: 2px solid #475569; }
     </style>
   </head>
   <body class="min-h-screen flex flex-col">
@@ -76,15 +79,14 @@
         </div>
         
         <div class="flex items-center gap-4 sm:gap-6">
-          <!-- Tab Navigasi -->
           <div class="hidden md:flex gap-6 text-sm font-semibold text-gray-300">
             <a href="#" id="nav-live" class="nav-tab active" onclick="filterCategory('live')">Live</a>
             <a href="#" id="nav-sepakbola" class="nav-tab" onclick="filterCategory('sepakbola')">Sepakbola</a>
             <a href="#" id="nav-futsal" class="nav-tab" onclick="filterCategory('futsal')">Futsal</a>
+            <a href="#" id="nav-bracket" class="nav-tab" onclick="switchPage('bracket')">Bagan</a>
             <a href="#" id="nav-history" class="nav-tab" onclick="switchPage('history')">History</a>
           </div>
           
-          <!-- Indikator Admin -->
           <div id="admin-indicator" class="hidden items-center gap-2">
             <span class="bg-emerald-500/20 border border-emerald-500/50 px-3 py-1 rounded-full text-xs text-emerald-400">
               <i class="fa-solid fa-shield-halved mr-1"></i> Admin
@@ -104,7 +106,6 @@
     <!-- ================= HALAMAN 1: LANDING PAGE / LIVE ================= -->
     <main id="page-landing" class="flex-grow bg-stadium flex flex-col items-center pt-8 sm:pt-10 px-2 sm:px-0">
       
-      <!-- Menu Kategori -->
       <div class="flex gap-4 sm:gap-8 mb-8">
         <div onclick="filterCategory('live')" id="cat-live" class="flex flex-col items-center gap-2 cursor-pointer group">
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-500 rounded-full flex items-center justify-center text-black text-xl sm:text-2xl group-hover:scale-110 transition shadow-[0_0_15px_rgba(245,158,11,0.5)]"><i class="fa-solid fa-tower-broadcast"></i></div>
@@ -120,7 +121,6 @@
         </div>
       </div>
 
-      <!-- Tombol Tambah Pertandingan (Hanya Admin) -->
       <div class="w-full max-w-4xl mb-4 flex justify-end hidden" id="add-match-container">
         <button onclick="addNewMatch()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow-lg flex items-center gap-2">
           <i class="fa-solid fa-plus"></i> Tambah Pertandingan
@@ -132,20 +132,74 @@
       </div>
     </main>
 
-    <!-- ================= HALAMAN 2: HISTORY ================= -->
+    <!-- ================= HALAMAN 2: BAGAN PERTANDINGAN ================= -->
+    <main id="page-bracket" class="hide flex-grow bg-stadium pt-8 px-4">
+      <div class="max-w-5xl mx-auto">
+        <h2 class="text-2xl font-bold text-amber-500 mb-6 flex items-center gap-2"><i class="fa-solid fa-sitemap"></i> Bagan Turnamen</h2>
+        
+        <div class="bg-[#1e293b]/95 backdrop-blur-md rounded-xl p-8 overflow-x-auto shadow-2xl border border-gray-700 min-h-[500px] flex items-center justify-center">
+          
+          <!-- WADAH BAGAN (Mirip Gambar 3) -->
+          <div class="flex items-center gap-8 min-w-[600px]">
+            <!-- Babak Kiri (Semifinal 1) -->
+            <div class="flex flex-col gap-8">
+              <div class="text-center text-xs font-bold text-gray-400 mb-2">Semifinal</div>
+              <div class="bg-[#0f172a] rounded-lg p-3 border border-gray-700 w-48 shadow-lg">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-1 mb-1 text-sm font-bold">
+                  <span>Tim A</span> <span class="text-amber-500">0</span>
+                </div>
+                <div class="flex justify-between items-center text-sm font-bold">
+                  <span>Tim B</span> <span class="text-amber-500">0</span>
+                </div>
+              </div>
+              <div class="bg-[#0f172a] rounded-lg p-3 border border-gray-700 w-48 shadow-lg">
+                <div class="flex justify-between items-center border-b border-gray-700 pb-1 mb-1 text-sm font-bold">
+                  <span>Tim C</span> <span class="text-amber-500">0</span>
+                </div>
+                <div class="flex justify-between items-center text-sm font-bold">
+                  <span>Tim D</span> <span class="text-amber-500">0</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Garis Penghubung & Final -->
+            <div class="flex flex-col items-center justify-center pt-6">
+               <div class="w-16 h-32 border-r-2 border-t-2 border-b-2 border-gray-600 rounded-r-lg relative">
+                  <div class="absolute right-0 top-1/2 w-8 border-t-2 border-gray-600"></div>
+               </div>
+            </div>
+
+            <!-- Babak Kanan (Final) -->
+            <div class="flex flex-col gap-4">
+              <div class="text-center text-xs font-bold text-amber-500 mb-2">Final</div>
+              <div class="bg-[#1e293b] border-2 border-amber-500 rounded-lg p-4 w-56 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
+                 <div class="text-center mb-2"><i class="fa-solid fa-trophy text-3xl text-amber-500"></i></div>
+                <div class="flex justify-between items-center border-b border-gray-600 pb-2 mb-2 text-sm font-bold text-white">
+                  <span>Pemenang SF1</span> <span class="text-amber-500">-</span>
+                </div>
+                <div class="flex justify-between items-center text-sm font-bold text-white">
+                  <span>Pemenang SF2</span> <span class="text-amber-500">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        <p class="text-center text-xs text-gray-400 mt-4">*Bagan ini menyesuaikan dengan struktur turnamen. (Simulasi Tampilan)</p>
+      </div>
+    </main>
+
+    <!-- ================= HALAMAN 3: HISTORY ================= -->
     <main id="page-history" class="hide flex-grow bg-stadium pt-8 px-4">
       <div class="max-w-4xl mx-auto">
         <h2 class="text-2xl font-bold text-amber-500 mb-6 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pertandingan</h2>
-        
         <div class="bg-[#1e293b]/95 backdrop-blur-md rounded-xl overflow-hidden shadow-2xl border border-gray-700">
-          <div id="history-list-container">
-            <!-- Dirender oleh JS -->
-          </div>
+          <div id="history-list-container"></div>
         </div>
       </div>
     </main>
 
-    <!-- ================= HALAMAN 3: DETAIL USER ================= -->
+    <!-- ================= HALAMAN 4: DETAIL USER ================= -->
     <main id="page-user" class="hide flex-grow bg-[#0f172a] py-6 sm:py-8 px-4">
       <div class="max-w-5xl mx-auto">
         <button onclick="switchPage('landing')" class="text-gray-400 hover:text-white mb-6 flex items-center gap-2 text-sm transition">
@@ -154,9 +208,16 @@
 
         <div class="bg-[#1e293b] rounded-2xl p-5 sm:p-10 shadow-xl border border-gray-700 relative overflow-hidden">
           
-          <div class="text-center mb-6 sm:mb-8 flex justify-center items-center gap-2">
-            <img src="" id="user-comp-logo" class="w-6 h-6 object-contain" alt="logo">
+          <!-- Info Kompetisi & Tanggal -->
+          <div class="text-center mb-6 sm:mb-8 flex justify-center items-center gap-3 flex-wrap">
+            <img src="" id="user-comp-logo" class="w-8 h-8 object-contain" alt="logo">
             <span class="bg-amber-500/20 text-amber-500 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full border border-amber-500/30 uppercase tracking-widest" id="user-competition">-</span>
+            <span class="text-xs text-gray-400 font-medium" id="user-date">-</span>
+          </div>
+
+          <!-- Gambar Piala Default / Custom -->
+          <div class="flex justify-center mb-6">
+            <img src="" id="user-trophy" class="h-24 object-contain drop-shadow-[0_0_15px_rgba(245,158,11,0.5)]" alt="Piala">
           </div>
 
           <div class="flex items-center justify-center gap-4 sm:gap-16 mb-8">
@@ -188,7 +249,7 @@
       </div>
     </main>
 
-    <!-- ================= HALAMAN 4: DETAIL ADMIN ================= -->
+    <!-- ================= HALAMAN 5: DETAIL ADMIN ================= -->
     <main id="page-admin" class="hide flex-grow bg-[#0f172a] py-6 sm:py-8 px-4">
       <div class="max-w-6xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -229,7 +290,7 @@
               
               <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700 space-y-3">
                 <div>
-                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Nama Kompetisi</label>
+                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Nama Kompetisi / Babak</label>
                   <input type="text" id="input-competition" class="w-full bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm" required>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
@@ -258,6 +319,7 @@
                   <input type="text" id="input-teamA" class="flex-grow bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm" required>
                   <input type="number" id="input-scoreA" class="w-16 bg-[#1e293b] border border-gray-600 rounded px-2 py-1.5 text-sm text-center font-bold" required>
                 </div>
+                <label class="block text-[10px] text-gray-500 mb-1">Upload Logo Klub (PNG/JPG)</label>
                 <input type="file" id="input-logoA" accept="image/*" class="text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1 w-full">
               </div>
 
@@ -268,12 +330,20 @@
                   <input type="text" id="input-teamB" class="flex-grow bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm" required>
                   <input type="number" id="input-scoreB" class="w-16 bg-[#1e293b] border border-gray-600 rounded px-2 py-1.5 text-sm text-center font-bold" required>
                 </div>
+                <label class="block text-[10px] text-gray-500 mb-1">Upload Logo Klub (PNG/JPG)</label>
                 <input type="file" id="input-logoB" accept="image/*" class="text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1 w-full">
               </div>
 
-              <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700">
-                <label class="block text-[10px] font-bold text-gray-400 mb-1">Logo Kompetisi</label>
-                <input type="file" id="input-comp-logo" accept="image/*" class="text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1 w-full">
+              <!-- Logo Kompetisi & Piala -->
+              <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700 space-y-2">
+                <div>
+                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Upload Logo Kompetisi</label>
+                  <input type="file" id="input-comp-logo" accept="image/*" class="text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1 w-full">
+                </div>
+                <div>
+                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Upload Gambar Piala (Custom)</label>
+                  <input type="file" id="input-trophy" accept="image/*" class="text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1 w-full">
+                </div>
               </div>
 
               <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-lg transition mt-2 transform active:scale-95 shadow-lg cursor-pointer">SIMPAN PERUBAHAN</button>
@@ -303,27 +373,39 @@
     </div>
 
     <script>
-      // === DATA DEFAULT ===
+      // Gambar Piala Default
+      const DEFAULT_TROPHY = 'https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg';
+      const DEFAULT_LOGO = 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
+
+      // === FUNGSI FORMASI DEFAULT 4-4-2 ===
+      function getDefaultFormation() {
+        return {
+          A: [
+            {name: 'Kiper A', x: 50, y: 90},
+            {name: 'Bek Kiri A', x: 20, y: 75}, {name: 'Bek Tengah 1 A', x: 40, y: 75}, {name: 'Bek Tengah 2 A', x: 60, y: 75}, {name: 'Bek Kanan A', x: 80, y: 75},
+            {name: 'Gelandang Kiri A', x: 20, y: 50}, {name: 'Gelandang Tengah 1 A', x: 40, y: 50}, {name: 'Gelandang Tengah 2 A', x: 60, y: 50}, {name: 'Gelandang Kanan A', x: 80, y: 50},
+            {name: 'Penyerang 1 A', x: 40, y: 25}, {name: 'Penyerang 2 A', x: 60, y: 25}
+          ],
+          B: [
+            {name: 'Kiper B', x: 50, y: 10},
+            {name: 'Bek Kiri B', x: 20, y: 25}, {name: 'Bek Tengah 1 B', x: 40, y: 25}, {name: 'Bek Tengah 2 B', x: 60, y: 25}, {name: 'Bek Kanan B', x: 80, y: 25},
+            {name: 'Gelandang Kiri B', x: 20, y: 50}, {name: 'Gelandang Tengah 1 B', x: 40, y: 50}, {name: 'Gelandang Tengah 2 B', x: 60, y: 50}, {name: 'Gelandang Kanan B', x: 80, y: 50},
+            {name: 'Penyerang 1 B', x: 40, y: 75}, {name: 'Penyerang 2 B', x: 60, y: 75}
+          ]
+        };
+      }
+
       const defaultMatches = {
-        'm1': { 
-          competition: 'Piala Dunia U17', scheduleStart: '2024-11-25T22:30', scheduleEnd: '2024-11-26T00:30', 
-          teamA: 'Honduras U17', logoA: '', scoreA: 0, teamB: 'Kolombia U17', logoB: '', scoreB: 0, 
-          compLogo: 'https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg', category: 'sepakbola',
-          formation: { A: [], B: [] }
-        },
         'm2': { 
           competition: 'Piala Dunia U17', scheduleStart: '2024-11-20T20:00', scheduleEnd: '2024-11-20T22:00', 
-          teamA: 'Teknik FC', logoA: 'https://cdn-icons-png.flaticon.com/512/53/53283.png', scoreA: 2, 
-          teamB: 'Hukum United', logoB: 'https://cdn-icons-png.flaticon.com/512/53/53283.png', scoreB: 1, 
-          compLogo: 'https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg', category: 'sepakbola',
-          formation: {
-            A: [{name: 'Budi (GK)', x: 50, y: 85}, {name: 'Andi', x: 30, y: 70}, {name: 'Rian', x: 70, y: 70}, {name: 'Dodi', x: 50, y: 50}],
-            B: [{name: 'Joko (GK)', x: 50, y: 15}, {name: 'Anto', x: 30, y: 30}, {name: 'Rudi', x: 70, y: 30}]
-          }
+          teamA: 'Teknik FC', logoA: DEFAULT_LOGO, scoreA: 2, 
+          teamB: 'Hukum United', logoB: DEFAULT_LOGO, scoreB: 1, 
+          compLogo: DEFAULT_TROPHY, trophyImg: DEFAULT_TROPHY, category: 'sepakbola',
+          formation: getDefaultFormation() // Otomatis 4-4-2
         }
       };
 
-      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_v4')) || defaultMatches;
+      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_v5')) || defaultMatches;
       let isAdmin = false;
       let currentMatchId = null;
       let currentCategory = 'live';
@@ -331,7 +413,7 @@
       let draggedPlayer = null;
 
       function saveToStorage() {
-        localStorage.setItem('unwahas_matches_v4', JSON.stringify(matchesData));
+        localStorage.setItem('unwahas_matches_v5', JSON.stringify(matchesData));
       }
 
       function getAutoStatus(match) {
@@ -357,19 +439,21 @@
 
       // === NAVIGASI HALAMAN ===
       function switchPage(page) {
-        document.getElementById('page-landing').classList.add('hide');
-        document.getElementById('page-history').classList.add('hide');
-        document.getElementById('page-user').classList.add('hide');
-        document.getElementById('page-admin').classList.add('hide');
+        ['landing', 'bracket', 'history', 'user', 'admin'].forEach(p => {
+          document.getElementById(`page-${p}`).classList.add('hide');
+        });
         
-        // Reset tab active
-        document.getElementById('nav-live').classList.remove('active');
-        document.getElementById('nav-history').classList.remove('active');
+        ['live', 'sepakbola', 'futsal', 'bracket', 'history'].forEach(t => {
+          document.getElementById(`nav-${t}`).classList.remove('active');
+        });
 
         if (page === 'landing') {
           document.getElementById('page-landing').classList.remove('hide');
           document.getElementById('nav-live').classList.add('active');
           renderLanding();
+        } else if (page === 'bracket') {
+          document.getElementById('page-bracket').classList.remove('hide');
+          document.getElementById('nav-bracket').classList.add('active');
         } else if (page === 'history') {
           document.getElementById('page-history').classList.remove('hide');
           document.getElementById('nav-history').classList.add('active');
@@ -382,20 +466,16 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
 
-      // === RENDER LANDING ===
+      // === RENDER LANDING (DENGAN TANGGAL & TANPA WARNA MERAH) ===
       function renderLanding() {
         const container = document.getElementById('match-list-container');
         container.innerHTML = '';
-
-        // Tampilkan tombol tambah jika admin
         document.getElementById('add-match-container').classList.toggle('hidden', !isAdmin);
 
         const filteredMatches = Object.keys(matchesData).filter(key => {
           const m = matchesData[key];
           const status = getAutoStatus(m);
-          // Jangan tampilkan yang sudah selesai di landing page
           if (status === 'finished') return false; 
-          
           if (currentCategory === 'live') return true;
           return m.category === currentCategory;
         });
@@ -419,6 +499,7 @@
               <div class="flex items-center gap-3 text-sm font-bold text-gray-300">
                 ${group.logo ? `<img src="${group.logo}" class="competition-logo">` : '<i class="fa-solid fa-trophy text-amber-500"></i>'}
                 <span>${compName}</span>
+                <span class="text-xs text-gray-500 font-normal ml-2" id="header-date-${compName.replace(/\s/g, '')}"></span>
               </div>
               <div class="text-xs text-gray-400">1 X 2</div>
             </div>
@@ -429,12 +510,13 @@
             const isLive = status === 'live';
             const timeStart = formatTime(m.scheduleStart);
             const timeEnd = formatTime(m.scheduleEnd);
-            const defLogo = 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
-            const logoA = m.logoA || defLogo;
-            const logoB = m.logoB || defLogo;
+            const matchDate = formatDate(m.scheduleStart); // Format Tanggal
+            
+            const logoA = m.logoA || DEFAULT_LOGO;
+            const logoB = m.logoB || DEFAULT_LOGO;
 
             html += `
-              <div onclick="openMatch('${m.id}')" class="flex items-center justify-between px-3 sm:px-4 py-3 border-b border-gray-700/50 hover:bg-gray-800/50 cursor-pointer transition group ${isLive ? 'bg-red-900/10' : ''}">
+              <div onclick="openMatch('${m.id}')" class="flex items-center justify-between px-3 sm:px-4 py-3 border-b border-gray-700/50 hover:bg-gray-800/50 cursor-pointer transition group">
                 <div class="w-20 sm:w-24 flex items-center gap-2">
                   ${isLive ? `<span class="live-dot w-2 h-2 bg-red-500 rounded-full"></span><span class="text-xs text-red-400 font-bold">LIVE</span>` : `<span class="text-xs sm:text-sm text-gray-400 font-medium">${timeStart} - ${timeEnd}</span>`}
                 </div>
@@ -458,7 +540,6 @@
         const container = document.getElementById('history-list-container');
         container.innerHTML = '';
 
-        // Filter hanya yang selesai
         const finishedMatches = Object.keys(matchesData).filter(key => getAutoStatus(matchesData[key]) === 'finished');
 
         if (finishedMatches.length === 0) {
@@ -466,7 +547,6 @@
           return;
         }
 
-        // Urutkan berdasarkan waktu selesai terbaru
         finishedMatches.sort((a, b) => new Date(matchesData[b].scheduleEnd) - new Date(matchesData[a].scheduleEnd));
 
         let tableHTML = `
@@ -484,8 +564,6 @@
 
         finishedMatches.forEach(id => {
           const m = matchesData[id];
-          const defLogo = 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
-          
           tableHTML += `
             <tr class="hover:bg-gray-800/30 transition">
               <td class="p-4 text-xs text-gray-400">${formatDate(m.scheduleEnd)}</td>
@@ -493,9 +571,9 @@
               <td class="p-4 text-center">
                 <div class="flex items-center justify-center gap-2 text-sm font-bold">
                   <span>${m.teamA}</span>
-                  <img src="${m.logoA || defLogo}" class="w-4 h-4 object-contain">
+                  <img src="${m.logoA || DEFAULT_LOGO}" class="w-4 h-4 object-contain">
                   <span class="bg-black border border-gray-600 px-2 py-0.5 rounded text-amber-500">${m.scoreA} - ${m.scoreB}</span>
-                  <img src="${m.logoB || defLogo}" class="w-4 h-4 object-contain">
+                  <img src="${m.logoB || DEFAULT_LOGO}" class="w-4 h-4 object-contain">
                   <span>${m.teamB}</span>
                 </div>
               </td>
@@ -510,7 +588,6 @@
         container.innerHTML = tableHTML;
       }
 
-      // === FILTER KATEGORI ===
       function filterCategory(cat) {
         currentCategory = cat;
         ['live', 'sepakbola', 'futsal'].forEach(c => {
@@ -527,18 +604,15 @@
           activeEl.querySelector('div').classList.replace('bg-gray-700', 'bg-amber-500');
           activeEl.querySelector('div').classList.replace('text-white', 'text-black');
         }
-        
-        // Pastikan navigasi tab kembali ke Live jika sedang di History
         switchPage('landing');
       }
 
-      // === TAMBAH PERTANDINGAN BARU ===
+      // === TAMBAH PERTANDINGAN (DENGAN FORMASI DEFAULT) ===
       function addNewMatch() {
-        const newId = 'm_' + Date.now(); // Generate ID unik
+        const newId = 'm_' + Date.now(); 
         const now = new Date();
-        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Besok
+        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000); 
 
-        // Format tanggal ke YYYY-MM-DDTHH:mm
         const formatISO = (date) => {
           const pad = (n) => n.toString().padStart(2, '0');
           return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -550,16 +624,14 @@
           scheduleEnd: formatISO(tomorrow),
           teamA: 'Tim A', logoA: '', scoreA: 0,
           teamB: 'Tim B', logoB: '', scoreB: 0,
-          compLogo: '',
-          category: 'sepakbola',
-          formation: { A: [], B: [] }
+          compLogo: '', trophyImg: DEFAULT_TROPHY, category: 'sepakbola',
+          formation: getDefaultFormation() // Otomatis pakai 4-4-2
         };
 
         saveToStorage();
-        openMatch(newId); // Langsung buka form edit untuk pertandingan baru
+        openMatch(newId); 
       }
 
-      // === HAPUS PERTANDINGAN ===
       function deleteCurrentMatch() {
         if (!currentMatchId) return;
         if (confirm('Apakah Anda yakin ingin menghapus pertandingan ini secara permanen?')) {
@@ -575,9 +647,12 @@
         currentMatchId = matchId;
         const data = matchesData[matchId];
         const status = getAutoStatus(data);
-        const defLogo = 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
         const timeStart = formatTime(data.scheduleStart);
         const timeEnd = formatTime(data.scheduleEnd);
+        const matchDate = formatDate(data.scheduleStart);
+
+        // Set Gambar Piala Default jika kosong
+        const trophySrc = data.trophyImg || DEFAULT_TROPHY;
 
         if (isAdmin) {
           document.getElementById('active-match-id').value = matchId;
@@ -593,8 +668,14 @@
           document.getElementById('input-logoA').value = '';
           document.getElementById('input-logoB').value = '';
           document.getElementById('input-comp-logo').value = '';
+          document.getElementById('input-trophy').value = '';
           
-          tempFormation = JSON.parse(JSON.stringify(data.formation || {A: [], B: []}));
+          // Cek jika formasi kosong, pakai default
+          if (!data.formation || (data.formation.A.length === 0 && data.formation.B.length === 0)) {
+             tempFormation = getDefaultFormation();
+          } else {
+             tempFormation = JSON.parse(JSON.stringify(data.formation));
+          }
           
           renderAdminPitch();
           renderPlayerInputs();
@@ -602,15 +683,20 @@
         } else {
           document.getElementById('user-comp-logo').src = data.compLogo || '';
           document.getElementById('user-competition').innerText = data.competition;
+          document.getElementById('user-date').innerText = matchDate; // Tampilkan Tanggal
+          document.getElementById('user-trophy').src = trophySrc; // Tampilkan Piala
+          
           document.getElementById('user-teamA').innerText = data.teamA;
-          document.getElementById('user-logoA').src = data.logoA || defLogo;
+          document.getElementById('user-logoA').src = data.logoA || DEFAULT_LOGO;
           document.getElementById('user-score').innerText = `${data.scoreA} - ${data.scoreB}`;
           document.getElementById('user-teamB').innerText = data.teamB;
-          document.getElementById('user-logoB').src = data.logoB || defLogo;
+          document.getElementById('user-logoB').src = data.logoB || DEFAULT_LOGO;
           document.getElementById('user-time-range').innerText = `${timeStart} - ${timeEnd}`;
           updateStatusDisplay('user-status', status);
 
-          renderUserPitch(data.formation || {A: [], B: []});
+          // Cek jika formasi kosong, pakai default
+          const formData = (data.formation && data.formation.A.length > 0) ? data.formation : getDefaultFormation();
+          renderUserPitch(formData);
           switchPage('user');
         }
       }
@@ -634,12 +720,6 @@
         const pitch = document.getElementById('user-pitch');
         pitch.innerHTML = '';
         
-        if (!formation.A || (formation.A.length === 0 && formation.B.length === 0)) {
-          document.getElementById('user-formation-text').classList.remove('hidden');
-          return;
-        }
-        document.getElementById('user-formation-text').classList.add('hidden');
-
         formation.A.forEach(p => {
           const div = document.createElement('div');
           div.className = 'player-dot team-a';
@@ -749,7 +829,6 @@
         renderPlayerInputs();
       }
 
-      // === LOGIN ===
       function openModal(id) { document.getElementById(id).classList.add('active'); }
       function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
@@ -763,7 +842,7 @@
           document.getElementById('admin-indicator').classList.remove('hidden');
           document.getElementById('admin-indicator').classList.add('flex');
           closeModal('loginModal');
-          renderLanding(); // Refresh agar tombol tambah muncul
+          renderLanding(); 
         } else {
           alert("Password Salah! (admin123)");
         }
@@ -779,7 +858,6 @@
         switchPage('landing');
       }
 
-      // === SIMPAN DATA ===
       function readFileAsDataURL(file) {
         return new Promise((resolve) => {
           if (!file) return resolve(null);
@@ -805,16 +883,20 @@
         match.scoreB = parseInt(document.getElementById('input-scoreB').value) || 0;
         match.formation = tempFormation;
 
+        // Ambil file
         const fileA = document.getElementById('input-logoA').files[0];
         const fileB = document.getElementById('input-logoB').files[0];
         const fileComp = document.getElementById('input-comp-logo').files[0];
+        const fileTrophy = document.getElementById('input-trophy').files[0];
 
+        // Proses upload
         if (fileA) match.logoA = await readFileAsDataURL(fileA);
         if (fileB) match.logoB = await readFileAsDataURL(fileB);
         if (fileComp) match.compLogo = await readFileAsDataURL(fileComp);
+        if (fileTrophy) match.trophyImg = await readFileAsDataURL(fileTrophy);
 
         saveToStorage();
-        alert("Data & Formasi Berhasil Disimpan!");
+        alert("Data, Logo, Piala & Formasi Berhasil Disimpan!");
         
         setTimeout(() => {
           switchPage('landing');

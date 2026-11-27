@@ -48,12 +48,12 @@
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         font-size: 10px; font-weight: bold; color: white;
         box-shadow: 0 4px 6px rgba(0,0,0,0.5); cursor: grab;
-        user-select: none; transform: translate(-50%, -50%); /* Center on coordinate */
+        user-select: none; transform: translate(-50%, -50%);
         border: 2px solid white; z-index: 10;
       }
       .player-dot:active { cursor: grabbing; z-index: 20; }
-      .player-dot.team-a { background-color: #10b981; } /* Hijau */
-      .player-dot.team-b { background-color: #3b82f6; } /* Biru */
+      .player-dot.team-a { background-color: #10b981; }
+      .player-dot.team-b { background-color: #3b82f6; }
       
       .player-label {
         position: absolute; top: 40px; white-space: nowrap; font-size: 9px;
@@ -61,7 +61,6 @@
         color: white; pointer-events: none;
       }
 
-      /* Kontrol Formasi Admin */
       .formation-controls { max-height: 400px; overflow-y: auto; }
       .formation-controls::-webkit-scrollbar { width: 6px; }
       .formation-controls::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
@@ -71,18 +70,21 @@
 
     <nav class="bg-[#1e293b]/90 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-        <div class="flex items-center gap-2 cursor-pointer transition transform hover:scale-105" onclick="goToHome()">
+        <div class="flex items-center gap-2 cursor-pointer transition transform hover:scale-105" onclick="switchPage('landing')">
           <div class="bg-amber-500 text-black font-black px-2 py-1 rounded shadow-md">UWH</div>
           <span class="text-xl font-bold tracking-wider hidden sm:block">UNWAHAS</span>
         </div>
         
         <div class="flex items-center gap-4 sm:gap-6">
+          <!-- Tab Navigasi -->
           <div class="hidden md:flex gap-6 text-sm font-semibold text-gray-300">
-            <a href="#" class="nav-tab active" onclick="filterCategory('live')">Live</a>
-            <a href="#" class="nav-tab" onclick="filterCategory('sepakbola')">Sepakbola</a>
-            <a href="#" class="nav-tab" onclick="filterCategory('futsal')">Futsal</a>
+            <a href="#" id="nav-live" class="nav-tab active" onclick="filterCategory('live')">Live</a>
+            <a href="#" id="nav-sepakbola" class="nav-tab" onclick="filterCategory('sepakbola')">Sepakbola</a>
+            <a href="#" id="nav-futsal" class="nav-tab" onclick="filterCategory('futsal')">Futsal</a>
+            <a href="#" id="nav-history" class="nav-tab" onclick="switchPage('history')">History</a>
           </div>
           
+          <!-- Indikator Admin -->
           <div id="admin-indicator" class="hidden items-center gap-2">
             <span class="bg-emerald-500/20 border border-emerald-500/50 px-3 py-1 rounded-full text-xs text-emerald-400">
               <i class="fa-solid fa-shield-halved mr-1"></i> Admin
@@ -99,9 +101,10 @@
       </div>
     </nav>
 
-    <!-- ================= HALAMAN 1: LANDING PAGE ================= -->
+    <!-- ================= HALAMAN 1: LANDING PAGE / LIVE ================= -->
     <main id="page-landing" class="flex-grow bg-stadium flex flex-col items-center pt-8 sm:pt-10 px-2 sm:px-0">
       
+      <!-- Menu Kategori -->
       <div class="flex gap-4 sm:gap-8 mb-8">
         <div onclick="filterCategory('live')" id="cat-live" class="flex flex-col items-center gap-2 cursor-pointer group">
           <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-500 rounded-full flex items-center justify-center text-black text-xl sm:text-2xl group-hover:scale-110 transition shadow-[0_0_15px_rgba(245,158,11,0.5)]"><i class="fa-solid fa-tower-broadcast"></i></div>
@@ -117,16 +120,36 @@
         </div>
       </div>
 
+      <!-- Tombol Tambah Pertandingan (Hanya Admin) -->
+      <div class="w-full max-w-4xl mb-4 flex justify-end hidden" id="add-match-container">
+        <button onclick="addNewMatch()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-lg text-sm transition shadow-lg flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i> Tambah Pertandingan
+        </button>
+      </div>
+
       <div id="match-list-container" class="w-full max-w-4xl bg-[#1e293b]/95 backdrop-blur-md rounded-xl overflow-hidden shadow-2xl mb-10 border border-gray-700 transition-all duration-300">
         <!-- Dirender oleh JS -->
       </div>
     </main>
 
-    <!-- ================= HALAMAN 2: DETAIL USER ================= -->
+    <!-- ================= HALAMAN 2: HISTORY ================= -->
+    <main id="page-history" class="hide flex-grow bg-stadium pt-8 px-4">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold text-amber-500 mb-6 flex items-center gap-2"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat Pertandingan</h2>
+        
+        <div class="bg-[#1e293b]/95 backdrop-blur-md rounded-xl overflow-hidden shadow-2xl border border-gray-700">
+          <div id="history-list-container">
+            <!-- Dirender oleh JS -->
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ================= HALAMAN 3: DETAIL USER ================= -->
     <main id="page-user" class="hide flex-grow bg-[#0f172a] py-6 sm:py-8 px-4">
       <div class="max-w-5xl mx-auto">
-        <button onclick="goToHome()" class="text-gray-400 hover:text-white mb-6 flex items-center gap-2 text-sm transition">
-          <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
+        <button onclick="switchPage('landing')" class="text-gray-400 hover:text-white mb-6 flex items-center gap-2 text-sm transition">
+          <i class="fa-solid fa-arrow-left"></i> Kembali
         </button>
 
         <div class="bg-[#1e293b] rounded-2xl p-5 sm:p-10 shadow-xl border border-gray-700 relative overflow-hidden">
@@ -154,31 +177,30 @@
             </div>
           </div>
 
-          <!-- BAGIAN FORMASI USER (Read Only) -->
           <div class="mt-8">
             <h3 class="text-sm font-bold text-gray-400 uppercase mb-3 border-b border-gray-700 pb-2"><i class="fa-solid fa-users mr-2"></i> Lineup & Formasi</h3>
             <div class="bg-[#0f172a] p-4 rounded-xl border border-gray-700 flex flex-col items-center">
-              
-              <!-- Render Lapangan Statis untuk User -->
-              <div class="pitch-container" id="user-pitch">
-                <!-- Player Dots akan di-inject JS -->
-              </div>
-              
-              <p id="user-formation-text" class="text-gray-500 italic text-sm mt-4">Formasi belum diatur oleh Admin.</p>
+              <div class="pitch-container" id="user-pitch"></div>
+              <p id="user-formation-text" class="text-gray-500 italic text-sm mt-4">Formasi belum diatur.</p>
             </div>
           </div>
         </div>
       </div>
     </main>
 
-    <!-- ================= HALAMAN 3: DETAIL ADMIN ================= -->
+    <!-- ================= HALAMAN 4: DETAIL ADMIN ================= -->
     <main id="page-admin" class="hide flex-grow bg-[#0f172a] py-6 sm:py-8 px-4">
       <div class="max-w-6xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-          <button onclick="goToHome()" class="text-gray-400 hover:text-white flex items-center gap-2 text-sm transition">
+          <button onclick="switchPage('landing')" class="text-gray-400 hover:text-white flex items-center gap-2 text-sm transition">
             <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
           </button>
-          <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold"><i class="fa-solid fa-lock-open mr-1"></i> Admin Control Panel</span>
+          <div class="flex gap-2">
+            <button onclick="deleteCurrentMatch()" class="bg-red-600/20 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/50 px-3 py-1 rounded-full text-xs font-bold transition flex items-center gap-1">
+              <i class="fa-solid fa-trash"></i> Hapus Match
+            </button>
+            <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold"><i class="fa-solid fa-lock-open mr-1"></i> Admin Panel</span>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -187,22 +209,15 @@
           <div class="lg:col-span-3 bg-[#1e293b] rounded-2xl p-5 sm:p-6 shadow-xl border border-gray-700">
             <h3 class="text-base sm:text-lg font-bold mb-4 border-b border-gray-700 pb-2">Atur Formasi (Drag & Drop)</h3>
             
-            <!-- Lapangan Admin -->
-            <div class="pitch-container" id="admin-pitch">
-              <!-- Player Dots akan di-inject JS -->
-            </div>
+            <div class="pitch-container" id="admin-pitch"></div>
             
-            <!-- Tombol Aksi Formasi -->
             <div class="mt-4 flex gap-2">
               <button type="button" onclick="addPlayer('A')" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold py-2 rounded transition"><i class="fa-solid fa-plus mr-1"></i> Pemain Tim A</button>
               <button type="button" onclick="addPlayer('B')" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 rounded transition"><i class="fa-solid fa-plus mr-1"></i> Pemain Tim B</button>
             </div>
-            <p class="text-[10px] text-gray-400 mt-2 text-center">*Geser titik untuk mengatur posisi. Klik kotak nama di bawah untuk mengganti nama pemain.</p>
+            <p class="text-[10px] text-gray-400 mt-2 text-center">*Geser titik pemain. Klik kotak nama di bawah untuk mengganti nama.</p>
 
-            <!-- List Pemain untuk Edit Nama -->
-            <div class="formation-controls mt-4 grid grid-cols-2 gap-2" id="player-name-list">
-              <!-- List Input Nama akan di-inject JS -->
-            </div>
+            <div class="formation-controls mt-4 grid grid-cols-2 gap-2" id="player-name-list"></div>
           </div>
 
           <!-- KOLOM KANAN: Detail Pertandingan -->
@@ -261,7 +276,7 @@
                 <input type="file" id="input-comp-logo" accept="image/*" class="text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1 w-full">
               </div>
 
-              <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-lg transition mt-2 transform active:scale-95 shadow-lg cursor-pointer">SIMPAN & KEMBALI</button>
+              <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-lg transition mt-2 transform active:scale-95 shadow-lg cursor-pointer">SIMPAN PERUBAHAN</button>
             </form>
           </div>
 
@@ -290,15 +305,17 @@
     <script>
       // === DATA DEFAULT ===
       const defaultMatches = {
+        'm1': { 
+          competition: 'Piala Dunia U17', scheduleStart: '2024-11-25T22:30', scheduleEnd: '2024-11-26T00:30', 
+          teamA: 'Honduras U17', logoA: '', scoreA: 0, teamB: 'Kolombia U17', logoB: '', scoreB: 0, 
+          compLogo: 'https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg', category: 'sepakbola',
+          formation: { A: [], B: [] }
+        },
         'm2': { 
-          competition: 'Piala Dunia U17', 
-          scheduleStart: '2024-11-20T20:00', 
-          scheduleEnd: '2024-11-20T22:00', 
-          teamA: 'Teknik FC', logoA: '', scoreA: 2, 
-          teamB: 'Hukum United', logoB: '', scoreB: 1, 
-          compLogo: 'https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg',
-          category: 'sepakbola',
-          // DATA FORMASI (X dan Y dalam persen %)
+          competition: 'Piala Dunia U17', scheduleStart: '2024-11-20T20:00', scheduleEnd: '2024-11-20T22:00', 
+          teamA: 'Teknik FC', logoA: 'https://cdn-icons-png.flaticon.com/512/53/53283.png', scoreA: 2, 
+          teamB: 'Hukum United', logoB: 'https://cdn-icons-png.flaticon.com/512/53/53283.png', scoreB: 1, 
+          compLogo: 'https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg', category: 'sepakbola',
           formation: {
             A: [{name: 'Budi (GK)', x: 50, y: 85}, {name: 'Andi', x: 30, y: 70}, {name: 'Rian', x: 70, y: 70}, {name: 'Dodi', x: 50, y: 50}],
             B: [{name: 'Joko (GK)', x: 50, y: 15}, {name: 'Anto', x: 30, y: 30}, {name: 'Rudi', x: 70, y: 30}]
@@ -306,17 +323,15 @@
         }
       };
 
-      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_v3')) || defaultMatches;
+      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_v4')) || defaultMatches;
       let isAdmin = false;
       let currentMatchId = null;
       let currentCategory = 'live';
-
-      // Variabel Global untuk Formasi Admin sementara
       let tempFormation = { A: [], B: [] };
-      let draggedPlayer = null; // Menyimpan elemen yang sedang di-drag
+      let draggedPlayer = null;
 
       function saveToStorage() {
-        localStorage.setItem('unwahas_matches_v3', JSON.stringify(matchesData));
+        localStorage.setItem('unwahas_matches_v4', JSON.stringify(matchesData));
       }
 
       function getAutoStatus(match) {
@@ -334,19 +349,59 @@
         return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
       }
 
-      // === RENDER LANDING PAGE ===
+      function formatDate(dateStr) {
+        if(!dateStr) return '';
+        const d = new Date(dateStr);
+        return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+      }
+
+      // === NAVIGASI HALAMAN ===
+      function switchPage(page) {
+        document.getElementById('page-landing').classList.add('hide');
+        document.getElementById('page-history').classList.add('hide');
+        document.getElementById('page-user').classList.add('hide');
+        document.getElementById('page-admin').classList.add('hide');
+        
+        // Reset tab active
+        document.getElementById('nav-live').classList.remove('active');
+        document.getElementById('nav-history').classList.remove('active');
+
+        if (page === 'landing') {
+          document.getElementById('page-landing').classList.remove('hide');
+          document.getElementById('nav-live').classList.add('active');
+          renderLanding();
+        } else if (page === 'history') {
+          document.getElementById('page-history').classList.remove('hide');
+          document.getElementById('nav-history').classList.add('active');
+          renderHistory();
+        } else if (page === 'user') {
+          document.getElementById('page-user').classList.remove('hide');
+        } else if (page === 'admin') {
+          document.getElementById('page-admin').classList.remove('hide');
+        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // === RENDER LANDING ===
       function renderLanding() {
         const container = document.getElementById('match-list-container');
         container.innerHTML = '';
 
+        // Tampilkan tombol tambah jika admin
+        document.getElementById('add-match-container').classList.toggle('hidden', !isAdmin);
+
         const filteredMatches = Object.keys(matchesData).filter(key => {
           const m = matchesData[key];
+          const status = getAutoStatus(m);
+          // Jangan tampilkan yang sudah selesai di landing page
+          if (status === 'finished') return false; 
+          
           if (currentCategory === 'live') return true;
           return m.category === currentCategory;
         });
 
         if (filteredMatches.length === 0) {
-          container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">Tidak ada pertandingan.</div>`;
+          container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">Tidak ada pertandingan aktif.</div>`;
           return;
         }
 
@@ -398,19 +453,64 @@
         }
       }
 
-      function showPage(pageId) {
-        document.getElementById('page-landing').classList.add('hide');
-        document.getElementById('page-user').classList.add('hide');
-        document.getElementById('page-admin').classList.add('hide');
-        document.getElementById(pageId).classList.remove('hide');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+      // === RENDER HISTORY ===
+      function renderHistory() {
+        const container = document.getElementById('history-list-container');
+        container.innerHTML = '';
+
+        // Filter hanya yang selesai
+        const finishedMatches = Object.keys(matchesData).filter(key => getAutoStatus(matchesData[key]) === 'finished');
+
+        if (finishedMatches.length === 0) {
+          container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">Belum ada pertandingan yang selesai.</div>`;
+          return;
+        }
+
+        // Urutkan berdasarkan waktu selesai terbaru
+        finishedMatches.sort((a, b) => new Date(matchesData[b].scheduleEnd) - new Date(matchesData[a].scheduleEnd));
+
+        let tableHTML = `
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-[#0f172a] text-amber-500 text-xs uppercase tracking-wider">
+              <tr>
+                <th class="p-4 border-b border-gray-700">Tanggal</th>
+                <th class="p-4 border-b border-gray-700">Kompetisi</th>
+                <th class="p-4 border-b border-gray-700 text-center">Skor</th>
+                <th class="p-4 border-b border-gray-700">Aksi</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+        `;
+
+        finishedMatches.forEach(id => {
+          const m = matchesData[id];
+          const defLogo = 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
+          
+          tableHTML += `
+            <tr class="hover:bg-gray-800/30 transition">
+              <td class="p-4 text-xs text-gray-400">${formatDate(m.scheduleEnd)}</td>
+              <td class="p-4 text-sm font-semibold text-gray-200">${m.competition}</td>
+              <td class="p-4 text-center">
+                <div class="flex items-center justify-center gap-2 text-sm font-bold">
+                  <span>${m.teamA}</span>
+                  <img src="${m.logoA || defLogo}" class="w-4 h-4 object-contain">
+                  <span class="bg-black border border-gray-600 px-2 py-0.5 rounded text-amber-500">${m.scoreA} - ${m.scoreB}</span>
+                  <img src="${m.logoB || defLogo}" class="w-4 h-4 object-contain">
+                  <span>${m.teamB}</span>
+                </div>
+              </td>
+              <td class="p-4">
+                <button onclick="openMatch('${id}')" class="text-xs text-amber-500 hover:text-white border border-amber-500/50 px-2 py-1 rounded transition">Lihat Detail</button>
+              </td>
+            </tr>
+          `;
+        });
+
+        tableHTML += `</tbody></table>`;
+        container.innerHTML = tableHTML;
       }
 
-      function goToHome() {
-        showPage('page-landing');
-        renderLanding();
-      }
-
+      // === FILTER KATEGORI ===
       function filterCategory(cat) {
         currentCategory = cat;
         ['live', 'sepakbola', 'futsal'].forEach(c => {
@@ -427,10 +527,50 @@
           activeEl.querySelector('div').classList.replace('bg-gray-700', 'bg-amber-500');
           activeEl.querySelector('div').classList.replace('text-white', 'text-black');
         }
-        renderLanding();
+        
+        // Pastikan navigasi tab kembali ke Live jika sedang di History
+        switchPage('landing');
       }
 
-      // === LOGIKA BUKA MATCH ===
+      // === TAMBAH PERTANDINGAN BARU ===
+      function addNewMatch() {
+        const newId = 'm_' + Date.now(); // Generate ID unik
+        const now = new Date();
+        const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Besok
+
+        // Format tanggal ke YYYY-MM-DDTHH:mm
+        const formatISO = (date) => {
+          const pad = (n) => n.toString().padStart(2, '0');
+          return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        };
+
+        matchesData[newId] = {
+          competition: 'Kompetisi Baru',
+          scheduleStart: formatISO(now),
+          scheduleEnd: formatISO(tomorrow),
+          teamA: 'Tim A', logoA: '', scoreA: 0,
+          teamB: 'Tim B', logoB: '', scoreB: 0,
+          compLogo: '',
+          category: 'sepakbola',
+          formation: { A: [], B: [] }
+        };
+
+        saveToStorage();
+        openMatch(newId); // Langsung buka form edit untuk pertandingan baru
+      }
+
+      // === HAPUS PERTANDINGAN ===
+      function deleteCurrentMatch() {
+        if (!currentMatchId) return;
+        if (confirm('Apakah Anda yakin ingin menghapus pertandingan ini secara permanen?')) {
+          delete matchesData[currentMatchId];
+          saveToStorage();
+          alert('Pertandingan berhasil dihapus!');
+          switchPage('landing');
+        }
+      }
+
+      // === BUKA MATCH ===
       function openMatch(matchId) {
         currentMatchId = matchId;
         const data = matchesData[matchId];
@@ -440,7 +580,6 @@
         const timeEnd = formatTime(data.scheduleEnd);
 
         if (isAdmin) {
-          // === ISI FORM ADMIN ===
           document.getElementById('active-match-id').value = matchId;
           document.getElementById('input-competition').value = data.competition;
           document.getElementById('input-schedule-start').value = data.scheduleStart || '';
@@ -451,19 +590,16 @@
           document.getElementById('input-teamB').value = data.teamB;
           document.getElementById('input-scoreB').value = data.scoreB;
           
-          // Reset file input
           document.getElementById('input-logoA').value = '';
           document.getElementById('input-logoB').value = '';
           document.getElementById('input-comp-logo').value = '';
           
-          // Copy Data Formasi ke Temporary
           tempFormation = JSON.parse(JSON.stringify(data.formation || {A: [], B: []}));
           
           renderAdminPitch();
           renderPlayerInputs();
-          showPage('page-admin');
+          switchPage('admin');
         } else {
-          // === ISI HALAMAN USER ===
           document.getElementById('user-comp-logo').src = data.compLogo || '';
           document.getElementById('user-competition').innerText = data.competition;
           document.getElementById('user-teamA').innerText = data.teamA;
@@ -474,9 +610,8 @@
           document.getElementById('user-time-range').innerText = `${timeStart} - ${timeEnd}`;
           updateStatusDisplay('user-status', status);
 
-          // Render Formasi di lapangan statis
           renderUserPitch(data.formation || {A: [], B: []});
-          showPage('page-user');
+          switchPage('user');
         }
       }
 
@@ -494,7 +629,7 @@
         }
       }
 
-      // === RENDER LAPANGAN (USER) ===
+      // === RENDER LAPANGAN USER ===
       function renderUserPitch(formation) {
         const pitch = document.getElementById('user-pitch');
         pitch.innerHTML = '';
@@ -505,64 +640,50 @@
         }
         document.getElementById('user-formation-text').classList.add('hidden');
 
-        // Render Tim A
         formation.A.forEach(p => {
           const div = document.createElement('div');
           div.className = 'player-dot team-a';
-          div.style.left = p.x + '%';
-          div.style.top = p.y + '%';
+          div.style.left = p.x + '%'; div.style.top = p.y + '%';
           div.innerHTML = `<span>${p.name.substring(0,2)}</span><div class="player-label">${p.name}</div>`;
           pitch.appendChild(div);
         });
-        // Render Tim B
         formation.B.forEach(p => {
           const div = document.createElement('div');
           div.className = 'player-dot team-b';
-          div.style.left = p.x + '%';
-          div.style.top = p.y + '%';
+          div.style.left = p.x + '%'; div.style.top = p.y + '%';
           div.innerHTML = `<span>${p.name.substring(0,2)}</span><div class="player-label">${p.name}</div>`;
           pitch.appendChild(div);
         });
       }
 
-      // === RENDER LAPANGAN (ADMIN - INTERAKTIF) ===
+      // === RENDER LAPANGAN ADMIN ===
       function renderAdminPitch() {
         const pitch = document.getElementById('admin-pitch');
         pitch.innerHTML = '';
 
-        // Render Tim A
-        tempFormation.A.forEach((p, index) => {
-          createDraggablePlayer(p, 'A', index, pitch);
-        });
-        // Render Tim B
-        tempFormation.B.forEach((p, index) => {
-          createDraggablePlayer(p, 'B', index, pitch);
-        });
+        tempFormation.A.forEach((p, index) => createDraggablePlayer(p, 'A', index, pitch));
+        tempFormation.B.forEach((p, index) => createDraggablePlayer(p, 'B', index, pitch));
       }
 
       function createDraggablePlayer(player, team, index, container) {
         const div = document.createElement('div');
         div.className = `player-dot team-${team.toLowerCase()}`;
-        div.style.left = player.x + '%';
-        div.style.top = player.y + '%';
+        div.style.left = player.x + '%'; div.style.top = player.y + '%';
         div.innerHTML = `<span>${player.name.substring(0,2)}</span><div class="player-label">${player.name}</div>`;
         
-        // Logika Drag & Drop (Mouse & Touch)
         div.addEventListener('mousedown', (e) => startDrag(e, div, team, index, container));
         div.addEventListener('touchstart', (e) => startDrag(e, div, team, index, container), {passive: false});
         
         container.appendChild(div);
       }
 
-      // Logika Drag & Drop
       function startDrag(e, element, team, index, container) {
-        e.preventDefault(); // Mencegah scroll di HP saat geser
+        e.preventDefault();
         draggedPlayer = { element, team, index, container };
 
         function onMove(moveEvent) {
           if (!draggedPlayer) return;
           const rect = container.getBoundingClientRect();
-          
           let clientX, clientY;
           if (moveEvent.type === 'mousemove') {
             clientX = moveEvent.clientX; clientY = moveEvent.clientY;
@@ -570,18 +691,11 @@
             clientX = moveEvent.touches[0].clientX; clientY = moveEvent.touches[0].clientY;
           }
 
-          // Hitung persentase X dan Y
           let x = ((clientX - rect.left) / rect.width) * 100;
           let y = ((clientY - rect.top) / rect.height) * 100;
+          x = Math.max(5, Math.min(95, x)); y = Math.max(5, Math.min(95, y));
 
-          // Batasi agar tidak keluar lapangan (min 5%, max 95%)
-          x = Math.max(5, Math.min(95, x));
-          y = Math.max(5, Math.min(95, y));
-
-          element.style.left = x + '%';
-          element.style.top = y + '%';
-
-          // Simpan posisi baru ke temporary
+          element.style.left = x + '%'; element.style.top = y + '%';
           tempFormation[draggedPlayer.team][draggedPlayer.index].x = Math.round(x);
           tempFormation[draggedPlayer.team][draggedPlayer.index].y = Math.round(y);
         }
@@ -600,20 +714,17 @@
         document.addEventListener('touchend', onUp);
       }
 
-      // List Input Nama Pemain Admin
       function renderPlayerInputs() {
         const list = document.getElementById('player-name-list');
         list.innerHTML = '';
 
-        const createInput = (p, team, index) => {
-          return `
-            <div class="flex items-center gap-1 bg-[#0f172a] p-1 rounded border border-gray-700">
-              <span class="w-2 h-2 rounded-full ${team === 'A' ? 'bg-emerald-500' : 'bg-blue-500'}"></span>
-              <input type="text" value="${p.name}" onchange="updatePlayerName('${team}', ${index}, this.value)" class="w-full bg-transparent text-xs text-white outline-none border-b border-transparent focus:border-gray-500" placeholder="Nama Pemain">
-              <button type="button" onclick="removePlayer('${team}', ${index})" class="text-red-500 hover:text-red-400"><i class="fa-solid fa-trash text-[10px]"></i></button>
-            </div>
-          `;
-        };
+        const createInput = (p, team, index) => `
+          <div class="flex items-center gap-1 bg-[#0f172a] p-1 rounded border border-gray-700">
+            <span class="w-2 h-2 rounded-full ${team === 'A' ? 'bg-emerald-500' : 'bg-blue-500'}"></span>
+            <input type="text" value="${p.name}" onchange="updatePlayerName('${team}', ${index}, this.value)" class="w-full bg-transparent text-xs text-white outline-none border-b border-transparent focus:border-gray-500" placeholder="Nama Pemain">
+            <button type="button" onclick="removePlayer('${team}', ${index})" class="text-red-500 hover:text-red-400"><i class="fa-solid fa-trash text-[10px]"></i></button>
+          </div>
+        `;
 
         tempFormation.A.forEach((p, i) => list.innerHTML += createInput(p, 'A', i));
         tempFormation.B.forEach((p, i) => list.innerHTML += createInput(p, 'B', i));
@@ -621,12 +732,12 @@
 
       function updatePlayerName(team, index, newName) {
         tempFormation[team][index].name = newName;
-        renderAdminPitch(); // Re-render lapangan agar label berubah
+        renderAdminPitch();
       }
 
       function addPlayer(team) {
         const defaultX = 50;
-        const defaultY = team === 'A' ? 90 : 10; // Sesuai tim
+        const defaultY = team === 'A' ? 90 : 10;
         tempFormation[team].push({ name: 'Pemain Baru', x: defaultX, y: defaultY });
         renderAdminPitch();
         renderPlayerInputs();
@@ -652,9 +763,7 @@
           document.getElementById('admin-indicator').classList.remove('hidden');
           document.getElementById('admin-indicator').classList.add('flex');
           closeModal('loginModal');
-          if (!document.getElementById('page-user').classList.contains('hide')) {
-            openMatch(currentMatchId);
-          }
+          renderLanding(); // Refresh agar tombol tambah muncul
         } else {
           alert("Password Salah! (admin123)");
         }
@@ -667,10 +776,10 @@
         document.getElementById('btn-login').classList.remove('hide');
         document.getElementById('admin-indicator').classList.add('hidden');
         document.getElementById('admin-indicator').classList.remove('flex');
-        goToHome(); // Kembali ke awal
+        switchPage('landing');
       }
 
-      // === FUNGSI SIMPAN (FIXED) ===
+      // === SIMPAN DATA ===
       function readFileAsDataURL(file) {
         return new Promise((resolve) => {
           if (!file) return resolve(null);
@@ -686,7 +795,6 @@
         const id = document.getElementById('active-match-id').value;
         const match = matchesData[id];
 
-        // Ambil data teks
         match.competition = document.getElementById('input-competition').value;
         match.scheduleStart = document.getElementById('input-schedule-start').value;
         match.scheduleEnd = document.getElementById('input-schedule-end').value;
@@ -695,38 +803,31 @@
         match.scoreA = parseInt(document.getElementById('input-scoreA').value) || 0;
         match.teamB = document.getElementById('input-teamB').value;
         match.scoreB = parseInt(document.getElementById('input-scoreB').value) || 0;
-
-        // Ambil data formasi dari temporary
         match.formation = tempFormation;
 
-        // Ambil file (Jika di-upload)
         const fileA = document.getElementById('input-logoA').files[0];
         const fileB = document.getElementById('input-logoB').files[0];
         const fileComp = document.getElementById('input-comp-logo').files[0];
 
-        // Proses file (Tunggu sampai selesai dibaca)
         if (fileA) match.logoA = await readFileAsDataURL(fileA);
         if (fileB) match.logoB = await readFileAsDataURL(fileB);
         if (fileComp) match.compLogo = await readFileAsDataURL(fileComp);
 
-        // Simpan ke LocalStorage
         saveToStorage();
+        alert("Data & Formasi Berhasil Disimpan!");
         
-        // Notifikasi sukses
-        alert("Data & Formasi Berhasil Disimpan Permanen!");
-        
-        // MUNDUR KE HALAMAN LIVE MENGGUNAKAN SETTIMEOUT
-        // Agar tidak bentrok dengan proses render gambar dari alert
         setTimeout(() => {
-          goToHome();
+          switchPage('landing');
         }, 100);
       }
 
       document.addEventListener('DOMContentLoaded', () => {
-        filterCategory('live');
+        switchPage('landing');
         setInterval(() => {
             if(!document.getElementById('page-landing').classList.contains('hide')) {
                 renderLanding();
+            } else if (!document.getElementById('page-history').classList.contains('hide')) {
+                renderHistory();
             }
         }, 60000); 
       });

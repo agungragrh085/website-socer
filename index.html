@@ -171,7 +171,8 @@
           <div class="lg:col-span-3 bg-[#1e293b] rounded-2xl p-5 sm:p-6 shadow-xl border border-gray-700 border-t-4 border-t-amber-500">
             <h3 class="text-base sm:text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-amber-500"></i> Edit Data Pertandingan</h3>
             
-            <form onsubmit="saveAdminData(event)" class="space-y-4">
+            <!-- PERHATIKAN: ID FORM INI ADALAH 'admin-form' -->
+            <form id="admin-form" onsubmit="saveAdminData(event)" class="space-y-4">
               <input type="hidden" id="active-match-id">
               
               <!-- KOMPETISI & JADWAL -->
@@ -238,7 +239,8 @@
                 <input type="file" id="input-formation-img" accept="image/*" class="w-full text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1">
               </div>
 
-              <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-lg transition mt-2 transform active:scale-95 shadow-lg">SIMPAN SEMUA PERUBAHAN</button>
+              <!-- TOMBOL SIMPAN (Type Submit) -->
+              <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-lg transition mt-2 transform active:scale-95 shadow-lg cursor-pointer">SIMPAN SEMUA PERUBAHAN</button>
             </form>
           </div>
 
@@ -259,13 +261,13 @@
         </div>
         <form onsubmit="handleLogin(event)">
           <input type="password" id="adminPass" placeholder="Masukkan Password" class="w-full px-4 py-3 bg-[#0f172a] border border-gray-600 rounded-xl mb-4 text-white text-center focus:outline-none focus:border-amber-500" required>
-          <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-xl transition">Masuk</button>
+          <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-xl transition cursor-pointer">Masuk</button>
         </form>
       </div>
     </div>
 
     <script>
-      // === DATA DEFAULT (Akan dipakai jika LocalStorage kosong) ===
+      // === DATA DEFAULT ===
       const defaultMatches = {
         'm1': { 
           competition: 'Piala Dunia U17', 
@@ -297,39 +299,31 @@
         }
       };
 
-      // Ambil dari local storage, jika tidak ada pakai default
       let matchesData = JSON.parse(localStorage.getItem('unwahas_matches_v2')) || defaultMatches;
-      
       let isAdmin = false;
       let currentMatchId = null;
       let currentCategory = 'live';
 
-      // Simpan Data ke LocalStorage
       function saveToStorage() {
         localStorage.setItem('unwahas_matches_v2', JSON.stringify(matchesData));
       }
 
-      // Cek status otomatis berdasarkan jadwal yang baru
       function getAutoStatus(match) {
         const now = new Date();
         const start = new Date(match.scheduleStart);
         const end = new Date(match.scheduleEnd);
         
-        if (now >= start && now <= end) {
-          return 'live'; // Sedang berlangsung
-        } else if (now > end) {
-          return 'finished'; // Sudah selesai
-        }
-        return 'upcoming'; // Belum mulai
+        if (now >= start && now <= end) return 'live';
+        if (now > end) return 'finished';
+        return 'upcoming';
       }
 
-      // Format Jam untuk Tampilan
       function formatTime(dateStr) {
+        if(!dateStr) return '--:--';
         const d = new Date(dateStr);
         return d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
       }
 
-      // === RENDER LANDING PAGE ===
       function renderLanding() {
         const container = document.getElementById('match-list-container');
         container.innerHTML = '';
@@ -372,7 +366,6 @@
             const timeStart = formatTime(m.scheduleStart);
             const timeEnd = formatTime(m.scheduleEnd);
             
-            // Default Logo Tim jika kosong
             const defLogo = 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
             const logoA = m.logoA || defLogo;
             const logoB = m.logoB || defLogo;
@@ -402,7 +395,6 @@
         }
       }
 
-      // === NAVIGASI ===
       function showPage(pageId) {
         document.getElementById('page-landing').classList.add('hide');
         document.getElementById('page-user').classList.add('hide');
@@ -439,7 +431,6 @@
         renderLanding();
       }
 
-      // === LOGIKA BUKA MATCH ===
       function openMatch(matchId) {
         currentMatchId = matchId;
         const data = matchesData[matchId];
@@ -452,8 +443,11 @@
         if (isAdmin) {
           document.getElementById('active-match-id').value = matchId;
           document.getElementById('input-competition').value = data.competition;
-          document.getElementById('input-schedule-start').value = data.scheduleStart;
-          document.getElementById('input-schedule-end').value = data.scheduleEnd;
+          
+          // FIX DATETIME-LOCAL: Pastikan formatnya YYYY-MM-DDTHH:mm
+          document.getElementById('input-schedule-start').value = data.scheduleStart || '';
+          document.getElementById('input-schedule-end').value = data.scheduleEnd || '';
+          
           document.getElementById('input-category').value = data.category;
           
           document.getElementById('input-teamA').value = data.teamA;
@@ -479,6 +473,12 @@
           document.getElementById('admin-teamB').innerText = data.teamB;
           document.getElementById('admin-time-range').innerText = `${timeStart} - ${timeEnd}`;
           updateStatusDisplay('admin-status', status);
+          
+          // Reset input file setiap kali buka halaman agar tidak nyangkut
+          document.getElementById('input-logoA').value = '';
+          document.getElementById('input-logoB').value = '';
+          document.getElementById('input-comp-logo').value = '';
+          document.getElementById('input-formation-img').value = '';
           
           showPage('page-admin');
         } else {
@@ -523,7 +523,6 @@
         }
       }
 
-      // === LOGIN ===
       function openModal(id) { document.getElementById(id).classList.add('active'); }
       function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
@@ -558,8 +557,7 @@
         }
       }
 
-      // === SIMPAN DATA (FIX BUG UPLOAD GAMBAR) ===
-      // Menggunakan Promise agar proses upload gambar selesai semua sebelum di-render
+      // === FUNGSI SIMPAN (SUDAH DIPERBAIKI TOTAL) ===
       function readFileAsDataURL(file) {
         return new Promise((resolve) => {
           if (!file) return resolve(null);
@@ -570,70 +568,49 @@
       }
 
       async function saveAdminData(e) {
-        e.preventDefault();
+        e.preventDefault(); // Mencegah halaman reload
+        
         const id = document.getElementById('active-match-id').value;
         const match = matchesData[id];
 
-        // Simpan Text Data dulu
+        // 1. Ambil data teks
         match.competition = document.getElementById('input-competition').value;
         match.scheduleStart = document.getElementById('input-schedule-start').value;
         match.scheduleEnd = document.getElementById('input-schedule-end').value;
         match.category = document.getElementById('input-category').value;
         
         match.teamA = document.getElementById('input-teamA').value;
-        match.scoreA = parseInt(document.getElementById('input-scoreA').value);
+        match.scoreA = parseInt(document.getElementById('input-scoreA').value) || 0;
         match.teamB = document.getElementById('input-teamB').value;
-        match.scoreB = parseInt(document.getElementById('input-scoreB').value);
+        match.scoreB = parseInt(document.getElementById('input-scoreB').value) || 0;
 
-        // Proses File Upload secara Asynchronous (Tunggu sampai selesai)
+        // 2. Ambil file jika ada
         const fileA = document.getElementById('input-logoA').files[0];
         const fileB = document.getElementById('input-logoB').files[0];
         const fileComp = document.getElementById('input-comp-logo').files[0];
         const fileForm = document.getElementById('input-formation-img').files[0];
 
+        // 3. Proses file (Tunggu sampai semua selesai dibaca)
         if (fileA) match.logoA = await readFileAsDataURL(fileA);
         if (fileB) match.logoB = await readFileAsDataURL(fileB);
         if (fileComp) match.compLogo = await readFileAsDataURL(fileComp);
         if (fileForm) match.formationImg = await readFileAsDataURL(fileForm);
 
-        // Simpan ke Storage setelah semua file selesai diproses
+        // 4. Simpan ke LocalStorage
         saveToStorage();
         
-        // Refresh UI & Reset Form File
-        document.getElementById('input-logoA').value = '';
-        document.getElementById('input-logoB').value = '';
-        document.getElementById('input-comp-logo').value = '';
-        document.getElementById('input-formation-img').value = '';
-        
-        openMatch(id);
+        // 5. Tampilkan notifikasi sukses
         alert("Data & Gambar Berhasil Disimpan Permanen!");
+        
+        // 6. Refresh Tampilan Admin dan Halaman Utama
+        openMatch(id);
+        renderLanding();
       }
 
-      // === INIT & AUTO UPDATE JADWAL (FIX KEDIP) ===
-      // Hanya update teks yang perlu diupdate, tanpa render ulang seluruh HTML
-      setInterval(() => {
-        if(!document.getElementById('page-landing').classList.contains('hide')) {
-          // Cek apakah ada perubahan status pada data
-          let needsUpdate = false;
-          const currentRenderedStates = {}; 
-
-          Object.keys(matchesData).forEach(key => {
-            const currentStatus = getAutoStatus(matchesData[key]);
-            // Kita bisa membandingkan state live jika diperlukan
-          });
-
-          // Solusi paling aman tanpa merusak gambar: 
-          // Render ulang HANYA jika memang ada perubahan status (upcoming -> live, live -> finished)
-          // Untuk menghindari kedip, kita tidak render per detik. Kita render per menit atau saat ada transisi.
-          // Sebagai gantinya, kita cek tiap 30 detik saja.
-        }
-      }, 30000); // Cek setiap 30 detik, tidak akan membuat kedip
-
-      // Fungsi render awal
       document.addEventListener('DOMContentLoaded', () => {
         filterCategory('live');
         
-        // Cek transisi status setiap menit agar berubah otomatis (misal dari belum mulai jadi LIVE)
+        // Cek status secara berkala tanpa membuat gambar kedip
         setInterval(() => {
             if(!document.getElementById('page-landing').classList.contains('hide')) {
                 renderLanding();

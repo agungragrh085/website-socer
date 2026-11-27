@@ -4,31 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>UNWAHAS Sports Live</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     
     <style>
       body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
-      
-      /* Background Stadion */
       .bg-stadium {
         background-image: linear-gradient(to bottom, rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 1)), url('https://images.unsplash.com/photo-1522778119026-d647f0596c20?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
         background-size: cover; background-position: center;
       }
-
-      /* Utility untuk Sembunyikan */
       .hide { display: none !important; }
-
-      /* Navigasi Tab */
+      
       .nav-tab { transition: all 0.3s ease; border-bottom: 2px solid transparent; cursor: pointer; padding-bottom: 4px; }
       .nav-tab:hover { color: #fbbf24; }
       .nav-tab.active { border-bottom: 2px solid #fbbf24; color: #fbbf24; }
       
-      /* Animasi LIVE */
       .live-dot { animation: pulse 1.5s infinite; }
       @keyframes pulse {
         0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
@@ -36,34 +27,37 @@
         100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
       }
 
-      /* Style Logo Kompetisi yang bisa di-upload */
-      .competition-logo {
-        width: 24px;
-        height: 24px;
-        object-fit: contain;
-        border-radius: 4px;
-        background-color: #1e293b;
-        padding: 2px;
+      /* Logo Styles */
+      .competition-logo, .team-logo-small {
+        width: 24px; height: 24px; object-fit: contain;
+        border-radius: 4px; background-color: transparent;
         transition: transform 0.2s;
       }
-      .competition-logo:hover {
-        transform: scale(1.1);
-        box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
+      .team-logo-large {
+        width: 80px; height: 80px; object-fit: contain;
       }
+      .logo-wrapper { position: relative; display: inline-block; cursor: pointer; }
+      .admin .logo-wrapper:hover::after {
+        content: '\f030'; font-family: 'Font Awesome 6 Free'; font-weight: 900;
+        position: absolute; inset: 0; background: rgba(0,0,0,0.6);
+        display: flex; align-items: center; justify-content: center;
+        border-radius: 50%; color: #fbbf24; font-size: 16px;
+      }
+      
+      .hide { display: none !important; }
+      .modal { display: none; }
+      .modal.active { display: flex; }
     </style>
   </head>
   <body class="min-h-screen flex flex-col">
 
-    <!-- ================= NAVBAR GLOBAL ================= -->
     <nav class="bg-[#1e293b]/90 backdrop-blur-md border-b border-gray-700 sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-        <!-- Logo -->
         <div class="flex items-center gap-2 cursor-pointer transition transform hover:scale-105" onclick="goToHome()">
           <div class="bg-amber-500 text-black font-black px-2 py-1 rounded shadow-md">UWH</div>
-          <span class="text-xl font-bold tracking-wider hidden sm:block">UNWAHAS<span class="text-amber-500"></span></span>
+          <span class="text-xl font-bold tracking-wider hidden sm:block">UNWAHAS</span>
         </div>
         
-        <!-- Menu & Login -->
         <div class="flex items-center gap-4 sm:gap-6">
           <div class="hidden md:flex gap-6 text-sm font-semibold text-gray-300">
             <a href="#" class="nav-tab active" onclick="filterCategory('live')">Live</a>
@@ -71,7 +65,6 @@
             <a href="#" class="nav-tab" onclick="filterCategory('futsal')">Futsal</a>
           </div>
           
-          <!-- Status Admin -->
           <div id="admin-indicator" class="hidden items-center gap-2 bg-emerald-500/20 border border-emerald-500/50 px-3 py-1 rounded-full text-xs text-emerald-400">
             <i class="fa-solid fa-shield-halved"></i> Admin
             <button onclick="logoutAdmin()" class="ml-1 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
@@ -87,170 +80,64 @@
     <!-- ================= HALAMAN 1: LANDING PAGE ================= -->
     <main id="page-landing" class="flex-grow bg-stadium flex flex-col items-center pt-8 sm:pt-10 px-2 sm:px-0">
       
-      <!-- Menu Kategori (Live, Sepakbola, Futsal) -->
       <div class="flex gap-4 sm:gap-8 mb-8">
         <div onclick="filterCategory('live')" id="cat-live" class="flex flex-col items-center gap-2 cursor-pointer group">
-          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-500 rounded-full flex items-center justify-center text-black text-xl sm:text-2xl group-hover:scale-110 transition shadow-[0_0_15px_rgba(245,158,11,0.5)]">
-            <i class="fa-solid fa-tower-broadcast"></i>
-          </div>
+          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-amber-500 rounded-full flex items-center justify-center text-black text-xl sm:text-2xl group-hover:scale-110 transition shadow-[0_0_15px_rgba(245,158,11,0.5)]"><i class="fa-solid fa-tower-broadcast"></i></div>
           <span class="text-xs font-semibold">Live</span>
         </div>
-        
         <div onclick="filterCategory('sepakbola')" id="cat-sepakbola" class="flex flex-col items-center gap-2 cursor-pointer group opacity-60 hover:opacity-100 transition">
-          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gray-700 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl group-hover:scale-110 transition border border-gray-600">
-            <i class="fa-solid fa-futbol"></i>
-          </div>
+          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gray-700 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl group-hover:scale-110 transition border border-gray-600"><i class="fa-solid fa-futbol"></i></div>
           <span class="text-xs font-semibold">Sepakbola</span>
         </div>
-        
         <div onclick="filterCategory('futsal')" id="cat-futsal" class="flex flex-col items-center gap-2 cursor-pointer group opacity-60 hover:opacity-100 transition">
-          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gray-700 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl group-hover:scale-110 transition border border-gray-600">
-            <i class="fa-solid fa-circle-notch"></i>
-          </div>
+          <div class="w-12 h-12 sm:w-14 sm:h-14 bg-gray-700 rounded-full flex items-center justify-center text-white text-xl sm:text-2xl group-hover:scale-110 transition border border-gray-600"><i class="fa-solid fa-circle-notch"></i></div>
           <span class="text-xs font-semibold">Futsal</span>
         </div>
       </div>
 
-      <!-- Daftar Pertandingan -->
-      <div id="match-list" class="w-full max-w-4xl bg-[#1e293b]/95 backdrop-blur-md rounded-xl overflow-hidden shadow-2xl mb-10 border border-gray-700 transition-all duration-300">
-        
-        <!-- Judul Kompetisi 1 (Sepakbola) -->
-        <div class="bg-[#0f172a] px-4 py-2 flex justify-between items-center border-b border-gray-700" data-category="sepakbola">
-          <div class="flex items-center gap-3 text-sm font-bold text-gray-300">
-            <!-- LOGO BISA DIGANTI ADMIN -->
-            <img src="https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg" alt="Logo" class="competition-logo cursor-pointer" onclick="if(isAdmin) openLogoModal('logo-pildun')" id="logo-pildun">
-            <span>International: Piala Dunia U17</span>
-          </div>
-          <div class="text-xs text-gray-400">1 X 2</div>
-        </div>
-
-        <!-- Match 1 (Sepakbola) -->
-        <div onclick="openMatch('m1')" class="match-item flex items-center justify-between px-3 sm:px-4 py-3 border-b border-gray-700/50 hover:bg-gray-800/50 cursor-pointer transition group" data-category="sepakbola">
-          <div class="w-14 sm:w-16 text-xs sm:text-sm text-gray-400 font-medium">22:30</div>
-          <div class="flex-grow flex items-center justify-end gap-2 sm:gap-3 text-xs sm:text-sm font-semibold">
-            <span class="truncate max-w-[80px] sm:max-w-none">Honduras U17</span>
-            <div class="w-5 sm:w-6 h-3.5 sm:h-4 bg-white/20 rounded-sm border border-white/30"></div>
-            <span class="text-gray-500 text-[10px] sm:text-xs mx-1 sm:mx-2">VS</span>
-            <div class="w-5 sm:w-6 h-3.5 sm:h-4 bg-white/20 rounded-sm border border-white/30"></div>
-            <span class="truncate max-w-[80px] sm:max-w-none">Kolombia U17</span>
-          </div>
-          <div class="flex items-center gap-2 sm:gap-3 w-24 sm:w-32 justify-end">
-            <span class="text-sm sm:text-lg font-bold text-gray-300">-</span>
-            <span class="hidden sm:block text-[10px] border border-gray-500 rounded px-2 py-0.5 text-gray-400 group-hover:border-amber-500 group-hover:text-amber-500 transition">BET</span>
-            <i class="fa-regular fa-star text-gray-500 hover:text-amber-500 text-xs sm:text-base"></i>
-          </div>
-        </div>
-
-        <!-- Match 2 (Sepakbola LIVE) -->
-        <div onclick="openMatch('m2')" class="match-item flex items-center justify-between px-3 sm:px-4 py-3 border-b border-gray-700/50 hover:bg-gray-800/50 cursor-pointer transition group bg-red-900/10" data-category="sepakbola">
-          <div class="w-14 sm:w-16 flex items-center gap-1 sm:gap-2">
-            <span class="live-dot w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full"></span>
-            <span class="text-[10px] sm:text-sm text-red-400 font-bold">LIVE</span>
-          </div>
-          <div class="flex-grow flex items-center justify-end gap-2 sm:gap-3 text-xs sm:text-sm font-semibold">
-            <span class="truncate max-w-[80px] sm:max-w-none">PMII FC</span>
-            <div class="w-5 sm:w-6 h-3.5 sm:h-4 bg-emerald-500 rounded-sm"></div>
-            <span class="text-amber-500 font-bold text-sm sm:text-base mx-1 sm:mx-2" id="landing-score-m2">2 - 1</span>
-            <div class="w-5 sm:w-6 h-3.5 sm:h-4 bg-blue-500 rounded-sm"></div>
-            <span class="truncate max-w-[80px] sm:max-w-none">HMI United</span>
-          </div>
-          <div class="flex items-center gap-2 sm:gap-3 w-24 sm:w-32 justify-end">
-            <span class="hidden sm:block text-[10px] border border-gray-500 rounded px-2 py-0.5 text-gray-400 group-hover:border-amber-500 group-hover:text-amber-500 transition">BET</span>
-            <i class="fa-solid fa-star text-amber-500 text-xs sm:text-base"></i>
-          </div>
-        </div>
-
-        <!-- Judul Kompetisi 2 (Futsal) -->
-        <div class="bg-[#0f172a] px-4 py-2 flex justify-between items-center border-b border-gray-700 border-t" data-category="futsal">
-          <div class="flex items-center gap-3 text-sm font-bold text-gray-300">
-            <!-- LOGO BISA DIGANTI ADMIN -->
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/AFC_Champions_League_logo.svg/200px-AFC_Champions_League_logo.svg.png" alt="Logo" class="competition-logo cursor-pointer" onclick="if(isAdmin) openLogoModal('logo-afc')" id="logo-afc">
-            <span>Asia: AFC Futsal Championship</span>
-          </div>
-          <div class="text-xs text-gray-400">1 X 2</div>
-        </div>
-
-        <!-- Match 3 (Futsal) -->
-        <div onclick="openMatch('m3')" class="match-item flex items-center justify-between px-3 sm:px-4 py-3 border-b border-gray-700/50 hover:bg-gray-800/50 cursor-pointer transition group" data-category="futsal">
-          <div class="w-14 sm:w-16 text-xs sm:text-sm text-gray-400 font-medium">23:00</div>
-          <div class="flex-grow flex items-center justify-end gap-2 sm:gap-3 text-xs sm:text-sm font-semibold">
-            <span class="truncate max-w-[80px] sm:max-w-none">Al-Ahli Dubai</span>
-            <div class="w-5 sm:w-6 h-3.5 sm:h-4 bg-red-500 rounded-sm"></div>
-            <span class="text-gray-500 text-[10px] sm:text-xs mx-1 sm:mx-2">VS</span>
-            <div class="w-5 sm:w-6 h-3.5 sm:h-4 bg-yellow-500 rounded-sm"></div>
-            <span class="truncate max-w-[80px] sm:max-w-none">Al Qadisiyah</span>
-          </div>
-          <div class="flex items-center gap-2 sm:gap-3 w-24 sm:w-32 justify-end">
-            <span class="text-sm sm:text-lg font-bold text-gray-300">3 - 0</span>
-            <span class="hidden sm:block text-[10px] border border-gray-500 rounded px-2 py-0.5 text-gray-400 group-hover:border-amber-500 group-hover:text-amber-500 transition">BET</span>
-            <i class="fa-regular fa-star text-gray-500 hover:text-amber-500 text-xs sm:text-base"></i>
-          </div>
-        </div>
-
+      <div id="match-list-container" class="w-full max-w-4xl bg-[#1e293b]/95 backdrop-blur-md rounded-xl overflow-hidden shadow-2xl mb-10 border border-gray-700 transition-all duration-300">
+        <!-- Dirender oleh JS -->
       </div>
     </main>
 
     <!-- ================= HALAMAN 2: DETAIL USER ================= -->
     <main id="page-user" class="hide flex-grow bg-[#0f172a] py-6 sm:py-8 px-4">
-      <div class="max-w-4xl mx-auto">
+      <div class="max-w-5xl mx-auto">
         <button onclick="goToHome()" class="text-gray-400 hover:text-white mb-6 flex items-center gap-2 text-sm transition">
-          <i class="fa-solid fa-arrow-left"></i> Kembali ke Live
+          <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
         </button>
 
         <div class="bg-[#1e293b] rounded-2xl p-5 sm:p-10 shadow-xl border border-gray-700 relative overflow-hidden">
           
-          <div class="text-center mb-6 sm:mb-8">
-            <span class="bg-amber-500/20 text-amber-500 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full border border-amber-500/30 uppercase tracking-widest" id="user-competition">Piala Dunia U17</span>
+          <div class="text-center mb-6 sm:mb-8 flex justify-center items-center gap-2">
+            <img src="" id="user-comp-logo" class="w-6 h-6 object-contain" alt="logo">
+            <span class="bg-amber-500/20 text-amber-500 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full border border-amber-500/30 uppercase tracking-widest" id="user-competition">-</span>
           </div>
 
           <div class="flex items-center justify-center gap-4 sm:gap-16 mb-8">
             <div class="flex flex-col items-center gap-2 sm:gap-3 w-1/3">
-              <div class="w-16 h-16 sm:w-24 sm:h-24 bg-gray-700 rounded-full flex items-center justify-center text-2xl sm:text-3xl shadow-lg border-2 border-gray-600">
-                <i class="fa-solid fa-shield text-emerald-500"></i>
-              </div>
-              <h2 class="text-sm sm:text-2xl font-bold text-center leading-tight" id="user-teamA">PMII FC</h2>
+              <img src="" id="user-logoA" class="team-logo-large rounded-full shadow-lg border-2 border-gray-600 p-1 bg-gray-800">
+              <h2 class="text-sm sm:text-2xl font-bold text-center leading-tight" id="user-teamA">-</h2>
             </div>
             
             <div class="text-center w-1/3">
-              <div class="text-3xl sm:text-6xl font-black text-amber-500 tracking-wider" id="user-score">2 - 1</div>
-              <div id="user-status" class="text-red-400 font-bold text-[10px] sm:text-sm mt-1 sm:mt-2 flex items-center justify-center gap-1 sm:gap-2">
-                <span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full animate-pulse"></span> LIVE
-              </div>
+              <div class="text-3xl sm:text-6xl font-black text-amber-500 tracking-wider" id="user-score">- - -</div>
+              <div id="user-status" class="font-bold text-xs sm:text-sm mt-1 sm:mt-2 flex items-center justify-center gap-1 sm:gap-2"></div>
             </div>
 
             <div class="flex flex-col items-center gap-2 sm:gap-3 w-1/3">
-              <div class="w-16 h-16 sm:w-24 sm:h-24 bg-gray-700 rounded-full flex items-center justify-center text-2xl sm:text-3xl shadow-lg border-2 border-gray-600">
-                <i class="fa-solid fa-shield text-blue-500"></i>
-              </div>
-              <h2 class="text-sm sm:text-2xl font-bold text-center leading-tight" id="user-teamB">HMI United</h2>
+              <img src="" id="user-logoB" class="team-logo-large rounded-full shadow-lg border-2 border-gray-600 p-1 bg-gray-800">
+              <h2 class="text-sm sm:text-2xl font-bold text-center leading-tight" id="user-teamB">-</h2>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-8 sm:mt-10">
-            <div class="bg-[#0f172a] p-4 rounded-xl border border-gray-700">
-              <h3 class="text-xs sm:text-sm font-bold text-gray-400 uppercase mb-3 border-b border-gray-700 pb-2"><i class="fa-solid fa-chart-simple mr-2"></i> Statistik</h3>
-              <div class="space-y-3">
-                <div class="flex justify-between items-center text-xs sm:text-sm">
-                  <span class="font-bold">55%</span> <span class="text-gray-500">Penguasaan Bola</span> <span class="font-bold">45%</span>
-                </div>
-                <div class="w-full bg-gray-800 h-1.5 sm:h-2 rounded-full overflow-hidden flex">
-                  <div class="bg-emerald-500 h-full" style="width: 55%"></div>
-                  <div class="bg-blue-500 h-full" style="width: 45%"></div>
-                </div>
-              </div>
+          <!-- GAMBAR FORMASI PEMAIN -->
+          <div class="mt-8">
+            <h3 class="text-sm font-bold text-gray-400 uppercase mb-3 border-b border-gray-700 pb-2"><i class="fa-solid fa-users mr-2"></i> Lineup & Formasi</h3>
+            <div class="bg-[#0f172a] p-4 rounded-xl border border-gray-700 flex justify-center">
+              <img src="" id="user-formation-img" class="w-full max-w-2xl rounded-lg shadow-lg hidden" alt="Formasi">
+              <p id="user-formation-text" class="text-gray-500 italic text-sm m-auto py-8">Belum ada gambar formasi.</p>
             </div>
-
-            <div class="bg-[#0f172a] p-4 rounded-xl border border-gray-700">
-              <h3 class="text-xs sm:text-sm font-bold text-gray-400 uppercase mb-3 border-b border-gray-700 pb-2"><i class="fa-solid fa-users mr-2"></i> Formasi & Pemain</h3>
-              <div class="text-xs sm:text-sm text-gray-300 space-y-1" id="user-formation">
-                <!-- Diisi JS -->
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-8 text-center border-t border-gray-700 pt-6">
-            <p class="text-gray-400 text-xs sm:text-sm mb-3">Ingin mengubah data ini?</p>
-            <button onclick="openModal('loginModal')" class="text-amber-500 hover:text-white text-xs sm:text-sm font-semibold underline transition">Login sebagai Admin</button>
           </div>
         </div>
       </div>
@@ -258,7 +145,7 @@
 
     <!-- ================= HALAMAN 3: DETAIL ADMIN ================= -->
     <main id="page-admin" class="hide flex-grow bg-[#0f172a] py-6 sm:py-8 px-4">
-      <div class="max-w-5xl mx-auto">
+      <div class="max-w-6xl mx-auto">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <button onclick="goToHome()" class="text-gray-400 hover:text-white flex items-center gap-2 text-sm transition">
             <i class="fa-solid fa-arrow-left"></i> Kembali ke Dashboard
@@ -266,59 +153,92 @@
           <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold"><i class="fa-solid fa-lock-open mr-1"></i> Admin Control Panel</span>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
           
-          <div class="lg:col-span-2 bg-[#1e293b] rounded-2xl p-5 sm:p-6 shadow-xl border border-gray-700">
-            <h3 class="text-base sm:text-lg font-bold mb-4 border-b border-gray-700 pb-2">Live Preview</h3>
-            <div class="flex items-center justify-center gap-4 sm:gap-16 mb-8 mt-6">
-              <div class="flex flex-col items-center gap-2 sm:gap-3 w-1/3">
-                <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-700 rounded-full flex items-center justify-center text-2xl sm:text-3xl"><i class="fa-solid fa-shield text-emerald-500"></i></div>
-                <h2 class="text-sm sm:text-xl font-bold text-center leading-tight" id="admin-teamA">PMII FC</h2>
+          <!-- PREVIEW KIRI -->
+          <div class="lg:col-span-2 bg-[#1e293b] rounded-2xl p-5 sm:p-6 shadow-xl border border-gray-700 flex flex-col justify-center items-center">
+            <h3 class="text-base sm:text-lg font-bold mb-4 border-b border-gray-700 pb-2 w-full text-center">Live Preview</h3>
+            <div class="flex items-center justify-center gap-4 w-full mb-6">
+              <div class="flex flex-col items-center gap-2 w-1/3">
+                <img src="" id="admin-logoA" class="team-logo-large bg-gray-800 rounded-full border border-gray-600">
+                <h2 class="text-sm sm:text-lg font-bold text-center leading-tight" id="admin-teamA">-</h2>
               </div>
               <div class="text-center w-1/3">
-                <div class="text-3xl sm:text-5xl font-black text-amber-500" id="admin-score">2 - 1</div>
-                <div id="admin-status" class="text-red-400 font-bold text-[10px] sm:text-sm mt-1 sm:mt-2"><span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full inline-block mr-1"></span> LIVE</div>
+                <div class="text-3xl sm:text-4xl font-black text-amber-500" id="admin-score">- - -</div>
+                <div id="admin-status" class="font-bold text-[10px] sm:text-xs mt-2"></div>
               </div>
-              <div class="flex flex-col items-center gap-2 sm:gap-3 w-1/3">
-                <div class="w-16 h-16 sm:w-20 sm:h-20 bg-gray-700 rounded-full flex items-center justify-center text-2xl sm:text-3xl"><i class="fa-solid fa-shield text-blue-500"></i></div>
-                <h2 class="text-sm sm:text-xl font-bold text-center leading-tight" id="admin-teamB">HMI United</h2>
+              <div class="flex flex-col items-center gap-2 w-1/3">
+                <img src="" id="admin-logoB" class="team-logo-large bg-gray-800 rounded-full border border-gray-600">
+                <h2 class="text-sm sm:text-lg font-bold text-center leading-tight" id="admin-teamB">-</h2>
               </div>
+            </div>
+            <div class="w-full">
+               <h4 class="text-xs text-gray-400 mb-2">Preview Gambar Formasi:</h4>
+               <img src="" id="admin-preview-formation" class="w-full rounded border border-gray-600 hidden">
             </div>
           </div>
 
-          <div class="bg-[#1e293b] rounded-2xl p-5 sm:p-6 shadow-xl border border-gray-700 border-t-4 border-t-amber-500">
-            <h3 class="text-base sm:text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-amber-500"></i> Update Data</h3>
+          <!-- FORM EDIT KANAN -->
+          <div class="lg:col-span-3 bg-[#1e293b] rounded-2xl p-5 sm:p-6 shadow-xl border border-gray-700 border-t-4 border-t-amber-500">
+            <h3 class="text-base sm:text-lg font-bold mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-to-square text-amber-500"></i> Edit Data Pertandingan</h3>
             
-            <form onsubmit="saveAdminData(event)" class="space-y-3 sm:space-y-4">
-              <input type="hidden" id="active-match-id" value="m2">
+            <form onsubmit="saveAdminData(event)" class="space-y-4">
+              <input type="hidden" id="active-match-id">
               
-              <div>
-                <label class="block text-[10px] sm:text-xs font-bold text-gray-400 mb-1">Nama Tim A</label>
-                <input type="text" id="input-teamA" class="w-full bg-[#0f172a] border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500 transition" required>
-              </div>
-              
-              <div class="grid grid-cols-2 gap-3 sm:gap-4">
+              <!-- KOMPETISI & JADWAL -->
+              <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-[10px] sm:text-xs font-bold text-gray-400 mb-1">Skor A</label>
-                  <input type="number" id="input-scoreA" class="w-full bg-[#0f172a] border border-gray-600 rounded-lg px-3 py-2 text-sm text-center font-bold focus:outline-none focus:border-amber-500 transition" required>
+                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Nama Kompetisi</label>
+                  <input type="text" id="input-competition" class="w-full bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm" required>
                 </div>
                 <div>
-                  <label class="block text-[10px] sm:text-xs font-bold text-gray-400 mb-1">Skor B</label>
-                  <input type="number" id="input-scoreB" class="w-full bg-[#0f172a] border border-gray-600 rounded-lg px-3 py-2 text-sm text-center font-bold focus:outline-none focus:border-amber-500 transition" required>
+                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Jadwal (Tanggal & Jam)</label>
+                  <input type="datetime-local" id="input-schedule" class="w-full bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm" required>
                 </div>
               </div>
 
-              <div>
-                <label class="block text-[10px] sm:text-xs font-bold text-gray-400 mb-1">Nama Tim B</label>
-                <input type="text" id="input-teamB" class="w-full bg-[#0f172a] border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500 transition" required>
+              <!-- LOGO & NAMA TIM A -->
+              <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700">
+                <label class="block text-[10px] font-bold text-gray-400 mb-1">Tim A (Kiri)</label>
+                <div class="flex gap-2 mb-2">
+                  <input type="text" id="input-teamA" class="flex-grow bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm" required>
+                  <input type="number" id="input-scoreA" class="w-16 bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm text-center font-bold" required>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label class="text-[10px] text-gray-500">Ganti Logo:</label>
+                  <input type="file" id="input-logoA" accept="image/*" class="text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1">
+                </div>
               </div>
 
-              <div>
-                <label class="block text-[10px] sm:text-xs font-bold text-gray-400 mb-1">Formasi (Pisahkan Enter)</label>
-                <textarea id="input-formation" rows="3" class="w-full bg-[#0f172a] border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-amber-500 transition"></textarea>
+              <!-- LOGO & NAMA TIM B -->
+              <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700">
+                <label class="block text-[10px] font-bold text-gray-400 mb-1">Tim B (Kanan)</label>
+                <div class="flex gap-2 mb-2">
+                  <input type="text" id="input-teamB" class="flex-grow bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm" required>
+                  <input type="number" id="input-scoreB" class="w-16 bg-[#1e293b] border border-gray-600 rounded px-3 py-1.5 text-sm text-center font-bold" required>
+                </div>
+                <div class="flex items-center gap-2">
+                  <label class="text-[10px] text-gray-500">Ganti Logo:</label>
+                  <input type="file" id="input-logoB" accept="image/*" class="text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1">
+                </div>
               </div>
 
-              <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-2.5 rounded-lg transition mt-2 transform active:scale-95">Simpan Perubahan</button>
+              <!-- LOGO KOMPETISI -->
+              <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700 flex items-center justify-between">
+                <div>
+                  <label class="block text-[10px] font-bold text-gray-400 mb-1">Logo Kompetisi</label>
+                  <input type="file" id="input-comp-logo" accept="image/*" class="text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1">
+                </div>
+                <img src="" id="admin-comp-logo-preview" class="w-10 h-10 object-contain bg-gray-800 rounded">
+              </div>
+
+              <!-- GAMBAR FORMASI -->
+              <div class="bg-[#0f172a] p-3 rounded-lg border border-gray-700">
+                <label class="block text-[10px] font-bold text-gray-400 mb-1">Gambar Formasi / Lineup Lapangan</label>
+                <input type="file" id="input-formation-img" accept="image/*" class="w-full text-xs text-gray-400 file:bg-gray-700 file:text-white file:border-0 file:rounded file:px-2 file:py-1">
+              </div>
+
+              <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-lg transition mt-2 transform active:scale-95 shadow-lg">SIMPAN SEMUA PERUBAHAN</button>
             </form>
           </div>
 
@@ -326,60 +246,155 @@
       </div>
     </main>
 
-    <!-- ================= MODAL LOGIN ================= -->
-    <div id="loginModal" class="hide fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 transition-opacity">
-      <div class="bg-[#1e293b] border border-gray-700 rounded-2xl w-full max-w-sm p-6 relative shadow-2xl animate-fade-in">
-        <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+    <!-- MODAL LOGIN -->
+    <div id="loginModal" class="modal fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] items-center justify-center p-4">
+      <div class="bg-[#1e293b] border border-gray-700 rounded-2xl w-full max-w-sm p-6 relative shadow-2xl">
+        <button onclick="closeModal('loginModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
         <div class="text-center mb-6">
           <div class="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
             <i class="fa-solid fa-lock text-2xl text-amber-500"></i>
           </div>
           <h3 class="text-xl font-bold">Admin Login</h3>
-          <p class="text-sm text-gray-400 mt-1">Gunakan password: <span class="text-amber-400 font-mono">admin123</span></p>
+          <p class="text-sm text-gray-400 mt-1">Password: <span class="text-amber-400 font-mono">admin123</span></p>
         </div>
         <form onsubmit="handleLogin(event)">
-          <input type="password" id="adminPass" placeholder="Masukkan Password" class="w-full px-4 py-3 bg-[#0f172a] border border-gray-600 rounded-xl mb-4 text-white text-center focus:outline-none focus:border-amber-500 transition" required>
-          <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-xl transition transform active:scale-95">Masuk</button>
+          <input type="password" id="adminPass" placeholder="Masukkan Password" class="w-full px-4 py-3 bg-[#0f172a] border border-gray-600 rounded-xl mb-4 text-white text-center focus:outline-none focus:border-amber-500" required>
+          <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 rounded-xl transition">Masuk</button>
         </form>
       </div>
     </div>
 
-    <!-- ================= MODAL GANTI LOGO KOMPETISI ================= -->
-    <div id="logoModal" class="hide fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div class="bg-[#1e293b] border border-gray-700 rounded-2xl w-full max-w-sm p-6 relative shadow-2xl">
-        <button onclick="closeModal('logoModal')" class="absolute top-4 right-4 text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-        <h3 class="text-lg font-bold mb-4 text-center">Ganti Logo Kompetisi</h3>
-        <input type="hidden" id="target-logo-id">
-        <div class="mb-4">
-          <label class="block text-xs font-bold text-gray-400 mb-2">Pilih Gambar Logo (PNG/JPG)</label>
-          <input type="file" id="logoUpload" accept="image/*" class="w-full text-xs text-gray-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-black hover:file:bg-amber-400 cursor-pointer border border-gray-600 rounded-lg p-1">
-        </div>
-        <button onclick="saveLogo()" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-2.5 rounded-lg transition">Terapkan Logo</button>
-      </div>
-    </div>
-
-    <!-- ================= JAVASCRIPT LOGIC ================= -->
     <script>
-      // State Aplikasi
-      let isAdmin = false;
-      let currentMatchId = null;
-      let currentCategory = 'live'; // live, sepakbola, futsal
-
-      // Data Simulasi Database
-      const matchesData = {
+      // === STATE & LOCAL STORAGE ===
+      // Data default jika pengguna baru pertama kali buka
+      const defaultMatches = {
         'm1': { 
-          teamA: 'Honduras U17', scoreA: 0, teamB: 'Kolombia U17', scoreB: 0, status: 'upcoming', 
-          formation: 'Belum ada formasi', category: 'sepakbola'
+          competition: 'Piala Dunia U17', schedule: '2024-11-25T22:30', 
+          teamA: 'Honduras U17', logoA: '', scoreA: 0, 
+          teamB: 'Kolombia U17', logoB: '', scoreB: 0, 
+          compLogo: 'https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg',
+          formationImg: '', category: 'sepakbola'
         },
         'm2': { 
-          teamA: 'PMII FC', scoreA: 2, teamB: 'HMI United', scoreB: 1, status: 'live', 
-          formation: '1. Budi (GK)\n2. Andi\n3. Rian\n4. Dodi\n5. Eko', category: 'sepakbola'
+          competition: 'Piala Dunia U17', schedule: '2024-11-20T20:00', 
+          teamA: 'Teknik FC', logoA: 'https://cdn-icons-png.flaticon.com/512/53/53283.png', scoreA: 10, 
+          teamB: 'Hukum United', logoB: 'https://cdn-icons-png.flaticon.com/512/53/53283.png', scoreB: 1, 
+          compLogo: 'https://upload.wikimedia.org/wikipedia/en/e/e3/2022_FIFA_World_Cup.svg',
+          formationImg: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Football_pitch_isometric.svg/1200px-Football_pitch_isometric.svg.png',
+          category: 'sepakbola'
         },
         'm3': { 
-          teamA: 'Al-Ahli Dubai', scoreA: 3, teamB: 'Al Qadisiyah', scoreB: 0, status: 'finished', 
-          formation: '1. Ali\n2. Ahmad\n3. Omar', category: 'futsal'
+          competition: 'AFC Futsal Championship', schedule: '2024-11-25T23:00', 
+          teamA: 'Al-Ahli Dubai', logoA: '', scoreA: 3, 
+          teamB: 'Al Qadisiyah', logoB: '', scoreB: 0, 
+          compLogo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/AFC_Champions_League_logo.svg/200px-AFC_Champions_League_logo.svg.png',
+          formationImg: '', category: 'futsal'
         }
       };
+
+      // Ambil data dari LocalStorage atau pakai default
+      let matchesData = JSON.parse(localStorage.getItem('unwahas_matches')) || defaultMatches;
+      
+      let isAdmin = false;
+      let currentMatchId = null;
+      let currentCategory = 'live';
+
+      // Simpan ke LocalStorage
+      function saveToStorage() {
+        localStorage.setItem('unwahas_matches', JSON.stringify(matchesData));
+      }
+
+      // Cek status otomatis berdasarkan jadwal
+      function getAutoStatus(match) {
+        const now = new Date();
+        const schedule = new Date(match.schedule);
+        
+        // Jika waktu sekarang sudah lewat jadwal
+        if (now >= schedule) {
+          // Anggap LIVE selama 2 jam dari jadwal mulai
+          const endTime = new Date(schedule.getTime() + (2 * 60 * 60 * 1000)); 
+          if (now < endTime) {
+            return 'live';
+          } else {
+            return 'finished';
+          }
+        }
+        return 'upcoming';
+      }
+
+      // === RENDER LANDING PAGE ===
+      function renderLanding() {
+        const container = document.getElementById('match-list-container');
+        container.innerHTML = '';
+
+        // Filter Match berdasarkan kategori
+        const filteredMatches = Object.keys(matchesData).filter(key => {
+          const m = matchesData[key];
+          if (currentCategory === 'live') return true;
+          return m.category === currentCategory;
+        });
+
+        if (filteredMatches.length === 0) {
+          container.innerHTML = `<div class="p-8 text-center text-gray-500 italic">Tidak ada pertandingan untuk kategori ini.</div>`;
+          return;
+        }
+
+        // Grouping berdasarkan Kompetisi
+        const grouped = {};
+        filteredMatches.forEach(key => {
+          const m = matchesData[key];
+          if (!grouped[m.competition]) grouped[m.competition] = { logo: m.compLogo, matches: [] };
+          grouped[m.competition].matches.push({ id: key, ...m });
+        });
+
+        // Loop Group
+        for (const compName in grouped) {
+          const group = grouped[compName];
+          
+          // Header Kompetisi
+          let html = `
+            <div class="bg-[#0f172a] px-4 py-2 flex justify-between items-center border-b border-gray-700 border-t mt-1">
+              <div class="flex items-center gap-3 text-sm font-bold text-gray-300">
+                ${group.logo ? `<img src="${group.logo}" class="competition-logo">` : '<i class="fa-solid fa-trophy text-amber-500"></i>'}
+                <span>${compName}</span>
+              </div>
+              <div class="text-xs text-gray-400">1 X 2</div>
+            </div>
+          `;
+
+          // Loop Match dalam Group
+          group.matches.forEach(m => {
+            const status = getAutoStatus(m);
+            const isLive = status === 'live';
+            const dateObj = new Date(m.schedule);
+            const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            
+            // Default Logo Tim jika kosong
+            const defLogo = 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
+            const logoA = m.logoA || defLogo;
+            const logoB = m.logoB || defLogo;
+
+            html += `
+              <div onclick="openMatch('${m.id}')" class="flex items-center justify-between px-3 sm:px-4 py-3 border-b border-gray-700/50 hover:bg-gray-800/50 cursor-pointer transition group ${isLive ? 'bg-red-900/10' : ''}">
+                <div class="w-14 sm:w-16 flex items-center gap-2">
+                  ${isLive ? `<span class="live-dot w-2 h-2 bg-red-500 rounded-full"></span><span class="text-xs text-red-400 font-bold">LIVE</span>` : `<span class="text-xs sm:text-sm text-gray-400 font-medium">${timeStr}</span>`}
+                </div>
+                <div class="flex-grow flex items-center justify-end gap-2 sm:gap-3 text-xs sm:text-sm font-semibold">
+                  <span class="truncate max-w-[80px] sm:max-w-none">${m.teamA}</span>
+                  <img src="${logoA}" class="w-5 h-5 sm:w-6 sm:h-6 object-contain">
+                  <span class="text-amber-500 font-bold text-sm sm:text-base mx-1 sm:mx-2">${m.scoreA} - ${m.scoreB}</span>
+                  <img src="${logoB}" class="w-5 h-5 sm:w-6 sm:h-6 object-contain">
+                  <span class="truncate max-w-[80px] sm:max-w-none">${m.teamB}</span>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-3 w-20 sm:w-24 justify-end">
+                  <i class="fa-regular fa-star text-gray-500 hover:text-amber-500"></i>
+                </div>
+              </div>
+            `;
+          });
+          container.innerHTML += html;
+        }
+      }
 
       // === NAVIGASI & FILTER ===
       function showPage(pageId) {
@@ -392,134 +407,132 @@
 
       function goToHome() {
         showPage('page-landing');
+        renderLanding();
       }
 
-      // Filter Kategori
       function filterCategory(cat) {
         currentCategory = cat;
-        
-        // Reset Gaya Tombol Kategori
         ['live', 'sepakbola', 'futsal'].forEach(c => {
           const el = document.getElementById(`cat-${c}`);
           if (el) {
             el.classList.remove('opacity-100');
             el.classList.add('opacity-60');
-            // Reset icon background
-            const iconDiv = el.querySelector('div');
-            iconDiv.classList.remove('bg-amber-500', 'text-black', 'shadow-[0_0_15px_rgba(245,158,11,0.5)]');
-            iconDiv.classList.add('bg-gray-700', 'text-white');
+            el.querySelector('div').classList.replace('bg-amber-500', 'bg-gray-700');
+            el.querySelector('div').classList.replace('text-black', 'text-white');
           }
         });
 
-        // Set Tombol Aktif
         const activeEl = document.getElementById(`cat-${cat}`);
         if (activeEl) {
           activeEl.classList.remove('opacity-60');
           activeEl.classList.add('opacity-100');
-          const iconDiv = activeEl.querySelector('div');
-          iconDiv.classList.remove('bg-gray-700', 'text-white');
-          iconDiv.classList.add('bg-amber-500', 'text-black', 'shadow-[0_0_15px_rgba(245,158,11,0.5)]');
+          activeEl.querySelector('div').classList.replace('bg-gray-700', 'bg-amber-500');
+          activeEl.querySelector('div').classList.replace('text-white', 'text-black');
         }
-
-        // Sembunyikan/Tampilkan Daftar Pertandingan
-        const matchItems = document.querySelectorAll('.match-item');
-        const headers = document.querySelectorAll('[data-category]');
-
-        matchItems.forEach(item => {
-          if (cat === 'live') {
-            // Tampilkan semua
-            item.classList.remove('hide');
-          } else {
-            // Filter berdasarkan kategori
-            if (item.getAttribute('data-category') === cat) {
-              item.classList.remove('hide');
-            } else {
-              item.classList.add('hide');
-            }
-          }
-        });
-
-        // Handle Header Kompetisi
-        headers.forEach(header => {
-          const headerCat = header.getAttribute('data-category');
-          if (cat === 'live') {
-            header.classList.remove('hide');
-          } else if (headerCat === cat) {
-            header.classList.remove('hide');
-          } else {
-            header.classList.add('hide');
-          }
-        });
+        
+        renderLanding();
       }
 
-      // === LOGIKA KLIK PERTANDINGAN ===
+      // === LOGIKA BUKA MATCH ===
       function openMatch(matchId) {
         currentMatchId = matchId;
         const data = matchesData[matchId];
+        const status = getAutoStatus(data);
+        const defLogo = 'https://cdn-icons-png.flaticon.com/512/53/53283.png';
 
         if (isAdmin) {
-          // Halaman Admin
+          // === ISI FORM ADMIN ===
           document.getElementById('active-match-id').value = matchId;
+          document.getElementById('input-competition').value = data.competition;
+          document.getElementById('input-schedule').value = data.schedule;
+          
           document.getElementById('input-teamA').value = data.teamA;
           document.getElementById('input-scoreA').value = data.scoreA;
+          document.getElementById('admin-logoA').src = data.logoA || defLogo;
+          
           document.getElementById('input-teamB').value = data.teamB;
           document.getElementById('input-scoreB').value = data.scoreB;
-          document.getElementById('input-formation').value = data.formation;
+          document.getElementById('admin-logoB').src = data.logoB || defLogo;
           
+          document.getElementById('admin-comp-logo-preview').src = data.compLogo || '';
+          
+          const formPrev = document.getElementById('admin-preview-formation');
+          if (data.formationImg) {
+            formPrev.src = data.formationImg;
+            formPrev.classList.remove('hidden');
+          } else {
+            formPrev.classList.add('hidden');
+          }
+
+          // Preview Text
           document.getElementById('admin-teamA').innerText = data.teamA;
           document.getElementById('admin-score').innerText = `${data.scoreA} - ${data.scoreB}`;
           document.getElementById('admin-teamB').innerText = data.teamB;
-          updateStatusDisplay('admin-status', data.status);
+          updateStatusDisplay('admin-status', status);
           
           showPage('page-admin');
         } else {
-          // Halaman User
+          // === ISI HALAMAN USER ===
+          document.getElementById('user-comp-logo').src = data.compLogo || '';
+          document.getElementById('user-competition').innerText = data.competition;
+          
           document.getElementById('user-teamA').innerText = data.teamA;
+          document.getElementById('user-logoA').src = data.logoA || defLogo;
           document.getElementById('user-score').innerText = `${data.scoreA} - ${data.scoreB}`;
           document.getElementById('user-teamB').innerText = data.teamB;
-          updateStatusDisplay('user-status', data.status);
+          document.getElementById('user-logoB').src = data.logoB || defLogo;
+          updateStatusDisplay('user-status', status);
+
+          // Gambar Formasi
+          const formImg = document.getElementById('user-formation-img');
+          const formText = document.getElementById('user-formation-text');
           
-          const formationHTML = data.formation.split('\n').map(line => `<p>${line}</p>`).join('');
-          document.getElementById('user-formation').innerHTML = formationHTML || '<p class="text-gray-500 italic">Belum diisi</p>';
+          if (data.formationImg) {
+            formImg.src = data.formationImg;
+            formImg.classList.remove('hidden');
+            formText.classList.add('hidden');
+          } else {
+            formImg.classList.add('hidden');
+            formText.classList.remove('hidden');
+          }
           
           showPage('page-user');
         }
       }
 
-      // Helper update status text
+      // Helper Status Text
       function updateStatusDisplay(elementId, status) {
         const el = document.getElementById(elementId);
         if (status === 'live') {
-          el.innerHTML = `<span class="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full animate-pulse"></span> LIVE`;
-          el.className = "text-red-400 font-bold text-[10px] sm:text-sm mt-1 sm:mt-2 flex items-center justify-center gap-1 sm:gap-2";
+          el.innerHTML = `<span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span> LIVE`;
+          el.className = "text-red-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2";
         } else if (status === 'finished') {
           el.innerHTML = `<i class="fa-solid fa-check-circle text-emerald-500"></i> SELESAI`;
-          el.className = "text-emerald-400 font-bold text-[10px] sm:text-sm mt-1 sm:mt-2 flex items-center justify-center gap-1 sm:gap-2";
+          el.className = "text-emerald-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2";
         } else {
           el.innerHTML = `<i class="fa-solid fa-clock"></i> AKAN DATANG`;
-          el.className = "text-gray-400 font-bold text-[10px] sm:text-sm mt-1 sm:mt-2 flex items-center justify-center gap-1 sm:gap-2";
+          el.className = "text-gray-400 font-bold text-[10px] sm:text-sm mt-1 flex items-center justify-center gap-2";
         }
       }
 
       // === LOGIN & LOGOUT ===
-      function openModal(id) { document.getElementById(id).classList.remove('hide'); }
-      function closeModal(id) { document.getElementById(id).classList.add('hide'); }
+      function openModal(id) { document.getElementById(id).classList.add('active'); }
+      function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
       function handleLogin(e) {
         e.preventDefault();
         const pass = document.getElementById('adminPass').value;
-        
         if (pass === 'admin123') {
           isAdmin = true;
+          document.body.classList.add('admin'); // Kelas untuk hover effect logo
           document.getElementById('btn-login').classList.add('hide');
           document.getElementById('admin-indicator').classList.remove('hide');
           document.getElementById('admin-indicator').classList.add('flex');
           closeModal('loginModal');
           
           if (!document.getElementById('page-user').classList.contains('hide')) {
-            openMatch(currentMatchId);
+            openMatch(currentMatchId); // Pindahkan ke admin view jika sedang di user view
           }
-          
         } else {
           alert("Password Salah! (Gunakan: admin123)");
         }
@@ -528,6 +541,7 @@
 
       function logoutAdmin() {
         isAdmin = false;
+        document.body.classList.remove('admin');
         document.getElementById('btn-login').classList.remove('hide');
         document.getElementById('admin-indicator').classList.add('hide');
         document.getElementById('admin-indicator').classList.remove('flex');
@@ -537,60 +551,71 @@
         }
       }
 
-      // === SIMPAN DATA (ADMIN) ===
+      // === SIMPAN DATA (UPLOAD LOGO DLL) ===
       function saveAdminData(e) {
         e.preventDefault();
         const id = document.getElementById('active-match-id').value;
+        const match = matchesData[id];
+
+        // Update Text Data
+        match.competition = document.getElementById('input-competition').value;
+        match.schedule = document.getElementById('input-schedule').value;
+        match.teamA = document.getElementById('input-teamA').value;
+        match.scoreA = parseInt(document.getElementById('input-scoreA').value);
+        match.teamB = document.getElementById('input-teamB').value;
+        match.scoreB = parseInt(document.getElementById('input-scoreB').value);
+
+        // Proses Upload Logo Tim A
+        const fileA = document.getElementById('input-logoA').files[0];
+        if (fileA) {
+          const readerA = new FileReader();
+          readerA.onload = function(evt) { match.logoA = evt.target.result; saveToStorage(); openMatch(id); };
+          readerA.readAsDataURL(fileA);
+        }
+
+        // Proses Upload Logo Tim B
+        const fileB = document.getElementById('input-logoB').files[0];
+        if (fileB) {
+          const readerB = new FileReader();
+          readerB.onload = function(evt) { match.logoB = evt.target.result; saveToStorage(); openMatch(id); };
+          readerB.readAsDataURL(fileB);
+        }
+
+        // Proses Upload Logo Kompetisi
+        const fileComp = document.getElementById('input-comp-logo').files[0];
+        if (fileComp) {
+          const readerComp = new FileReader();
+          readerComp.onload = function(evt) { match.compLogo = evt.target.result; saveToStorage(); openMatch(id); };
+          readerComp.readAsDataURL(fileComp);
+        }
+
+        // Proses Upload Gambar Formasi
+        const fileForm = document.getElementById('input-formation-img').files[0];
+        if (fileForm) {
+          const readerForm = new FileReader();
+          readerForm.onload = function(evt) { match.formationImg = evt.target.result; saveToStorage(); openMatch(id); };
+          readerForm.readAsDataURL(fileForm);
+        }
+
+        // Simpan ke Storage
+        saveToStorage();
         
-        matchesData[id].teamA = document.getElementById('input-teamA').value;
-        matchesData[id].scoreA = parseInt(document.getElementById('input-scoreA').value);
-        matchesData[id].teamB = document.getElementById('input-teamB').value;
-        matchesData[id].scoreB = parseInt(document.getElementById('input-scoreB').value);
-        matchesData[id].formation = document.getElementById('input-formation').value;
-
-        // Update Live Preview
-        document.getElementById('admin-teamA').innerText = matchesData[id].teamA;
-        document.getElementById('admin-score').innerText = `${matchesData[id].scoreA} - ${matchesData[id].scoreB}`;
-        document.getElementById('admin-teamB').innerText = matchesData[id].teamB;
-
-        // Update skor di Landing Page secara langsung
-        if (id === 'm2') {
-          document.getElementById('landing-score-m2').innerText = `${matchesData[id].scoreA} - ${matchesData[id].scoreB}`;
-        }
-
-        alert("Data Pertandingan Berhasil Diupdate!");
+        // Refresh UI
+        openMatch(id);
+        alert("Data Berhasil Disimpan Permanen!");
       }
 
-      // === GANTI LOGO KOMPETISI ===
-      function openLogoModal(logoId) {
-        if (!isAdmin) return;
-        document.getElementById('target-logo-id').value = logoId;
-        openModal('logoModal');
-      }
-
-      function saveLogo() {
-        const fileInput = document.getElementById('logoUpload');
-        const file = fileInput.files[0];
-        const targetId = document.getElementById('target-logo-id').value;
-
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            document.getElementById(targetId).src = e.target.result;
-            closeModal('logoModal');
-            // Reset input file
-            fileInput.value = '';
-          }
-          reader.readAsDataURL(file);
-        } else {
-          alert("Pilih gambar terlebih dahulu!");
-        }
-      }
-
-      // Initialize with default view
+      // Init
       document.addEventListener('DOMContentLoaded', () => {
-        filterCategory('live'); // Default: Tampilkan semua (Live)
+        filterCategory('live');
       });
+
+      // OTOMATISASI JADWAL: Cek setiap 1 detik apakah ada perubahan status
+      setInterval(() => {
+        if(!document.getElementById('page-landing').classList.contains('hide')) {
+          renderLanding(); // Render ulang agar status live muncul otomatis
+        }
+      }, 1000);
 
     </script>
   </body>
